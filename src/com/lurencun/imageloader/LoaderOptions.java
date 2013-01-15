@@ -9,7 +9,6 @@ package com.lurencun.imageloader;
  */
 public class LoaderOptions {
 
-	public final int threadPoolSize;
 	public final int imageStubResId;
 	public final int connectionTimeOut;
 	public final int readTimeOut;
@@ -18,7 +17,6 @@ public class LoaderOptions {
 	public final boolean logging;
 	
 	private LoaderOptions(Builder builder){
-		threadPoolSize = builder.threadPoolSize;
 		imageStubResId = builder.imageStubResId;
 		connectionTimeOut = builder.connectionTimeOut;
 		readTimeOut = builder.readTimeOut;
@@ -28,18 +26,12 @@ public class LoaderOptions {
 	}
 	
 	public static class Builder{
-    	private int threadPoolSize = 5;
     	private int imageStubResId = -1;
     	private int connectionTimeOut = 30000;
     	private int readTimeOut = 30000;
     	private long maxMemoryInByte = Runtime.getRuntime().maxMemory()/4;//use 25% of available heap size
     	private String cacheDir = "_lrcImageLoaderCache";
     	private boolean enableLogging = false;
-    	
-    	public Builder threadPoolSize(int size){
-    		threadPoolSize = size;
-    		return this;
-    	}
     	
     	public Builder imageStubResId(int stubImage){
     		imageStubResId = stubImage;

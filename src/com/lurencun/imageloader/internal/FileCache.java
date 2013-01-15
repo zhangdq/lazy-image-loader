@@ -1,9 +1,11 @@
-package com.lurencun.imageloader;
+package com.lurencun.imageloader.internal;
 
 import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import com.lurencun.imageloader.LoaderOptions;
 
 import android.content.Context;
 import android.os.Environment;
@@ -21,7 +23,7 @@ public class FileCache {
 		return data.toString(RADIX) + (suffix.length() <= ".jpeg".length() ? suffix : "" );
 	}
 
-	private static byte[] MD5(byte[] data) {
+	static byte[] MD5(byte[] data) {
 		byte[] hash = null;
 		try {
 			MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -45,7 +47,7 @@ public class FileCache {
         }
     }
     
-    public File getFile(String url){
+    public File get(String url){
         File file = new File(cacheDir, urlToName(url));
         return file;
     }
