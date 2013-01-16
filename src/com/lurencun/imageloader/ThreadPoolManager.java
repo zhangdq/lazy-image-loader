@@ -1,4 +1,4 @@
-package com.lurencun.imageloader.internal;
+package com.lurencun.imageloader;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -62,7 +62,7 @@ public class ThreadPoolManager {
 	public int submit(Runnable r){
 		int taskId = mRequestTaskIdPool++;
 		Future<?> task = executor.submit(r);
-		mTaskHolder.put(taskId, task);
+    	mTaskHolder.put(taskId, task);
 		return taskId;
 	}
 	

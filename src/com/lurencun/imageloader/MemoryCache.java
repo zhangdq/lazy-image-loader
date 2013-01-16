@@ -1,4 +1,4 @@
-package com.lurencun.imageloader.internal;
+package com.lurencun.imageloader;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.lurencun.imageloader.LoaderOptions;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -42,23 +41,26 @@ public class MemoryCache {
     	keepMemorySize();
     	try{
     		remove(url);
-    		CACHE.put(url, new CacheWrapper(url, bitmap, isCompressed));
+    		CacheWrapper cache = new CacheWrapper(url, bitmap, isCompressed);
+    		allocatedSize += cache.size;
+    		CACHE.put(url, cache);
     	}catch(Throwable exp){
     		exp.printStackTrace();
     	}
     }
     
     public void keepMemorySize(){
-    	if(enableLogging) Log.i(TAG, "MemoryCache TotalSize: " + getSizeFormat(allocatedSize) + ", CacheObject count: " + CACHE.size());
+    	if(enableLogging) Log.i(TAG, "MemoryCache size: " + getSizeFormat(allocatedSize) + ", CacheObject count: " + CACHE.size());
         if(allocatedSize > maxMemoryLimit){
         	Iterator<Entry<String, CacheWrapper>> iter = CACHE.entrySet().iterator();
         	while(iter.hasNext()){
         		Entry<String, CacheWrapper> entry = iter.next();
         		CacheWrapper cache = entry.getValue();
+        		if(cache.isUsing) continue;
         		allocatedSize -= cache.size;
         		cache.recycle();
         		iter.remove();
-            	if(allocatedSize <=maxMemoryLimit) break;
+            	if(allocatedSize <= maxMemoryLimit) break;
         	}
         }
     }
@@ -70,8 +72,10 @@ public class MemoryCache {
         	while(iter.hasNext()){
         		Entry<String, CacheWrapper> entry = iter.next();
         		CacheWrapper cache = entry.getValue();
+        		if(cache.isUsing) continue;
         		allocatedSize -= cache.size;
         		cache.recycle();
+        		iter.remove();
         	}
         }catch(Throwable exp){
         	exp.printStackTrace();

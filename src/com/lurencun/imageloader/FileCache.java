@@ -1,11 +1,10 @@
-package com.lurencun.imageloader.internal;
+package com.lurencun.imageloader;
 
 import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import com.lurencun.imageloader.LoaderOptions;
 
 import android.content.Context;
 import android.os.Environment;

@@ -1,4 +1,4 @@
-package com.lurencun.imageloader.internal;
+package com.lurencun.imageloader;
 
 import java.io.File;
 import java.io.FileOutputStream;

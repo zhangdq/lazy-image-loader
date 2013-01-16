@@ -8,25 +8,18 @@ import android.content.Context;
 import android.os.Handler;
 import android.widget.ImageView;
 
-import com.lurencun.imageloader.internal.CacheWrapper;
-import com.lurencun.imageloader.internal.DisplayTask;
-import com.lurencun.imageloader.internal.FileCache;
-import com.lurencun.imageloader.internal.MemoryCache;
-import com.lurencun.imageloader.internal.TaskRequest;
-import com.lurencun.imageloader.internal.ThreadPoolManager;
 
 public class LazyImageLoader {
     
-	private MemoryCache memoryCache;
-	private FileCache fileCache;
-	
-    private Map<ImageView, String> targetViewsHolder;
-    
-    private Handler uiDrawableHandler = new Handler();
-    
-    private final ThreadPoolManager threadPool;
-    private static LoaderOptions loaderOptions;
-    private static LazyImageLoader instance;
+	private static LazyImageLoader instance;
+	private final ThreadPoolManager threadPool;
+
+	// default , 包访问权限
+	MemoryCache memoryCache;
+	FileCache fileCache;
+    Map<ImageView, String> displayViewsHolder;
+    Handler uiDrawableHandler = new Handler();
+    static LoaderOptions loaderOptions;
     
     public static void init(Context context, LoaderOptions options){
     	loaderOptions = options;
@@ -43,29 +36,7 @@ public class LazyImageLoader {
         fileCache = new FileCache(context,loaderOptions);
         memoryCache = new MemoryCache(loaderOptions);
         threadPool = new ThreadPoolManager();
-        targetViewsHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    }
-    
-    public boolean isViewReused(TaskRequest task){
-        String tag = targetViewsHolder.get(task.view);
-        return (tag==null || !tag.equals(task.uri));
-    }
-    
-    private void display(String url, ImageView imageView, boolean allowCompress, boolean cacheable, boolean findInCache){
-    	if(imageView == null)  return;
-    	if(url == null){
-    		imageView.setImageResource(loaderOptions.imageStubResId);
-    		return;
-    	}
-    	
-    	if(findInCache){
-    		CacheWrapper cache = memoryCache.get(url);
-        	if(cache != null && compressVerify(allowCompress, cache.isCompressed)){
-        		imageView.setImageBitmap(cache.bitmap);
-        		return;
-        	}
-    	}
-    	submitDisplayTask(url,imageView, allowCompress, cacheable);
+        displayViewsHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     }
     
     static boolean compressVerify(boolean allowCompress,boolean isCompressed){
@@ -75,6 +46,25 @@ public class LazyImageLoader {
 			return !(allowCompress | isCompressed);
 		}
 	}
+    
+    private void display(String url, ImageView imageView, boolean allowCompress, boolean cacheable, boolean findInCache){
+    	
+    	if(imageView == null)  return;
+    	if(url == null){
+    		imageView.setImageResource(loaderOptions.imageStubResId);
+    		return;
+    	}
+    	displayViewsHolder.put(imageView, url);
+    	if(findInCache){
+    		CacheWrapper cache = memoryCache.get(url);
+        	if(cache != null && compressVerify(allowCompress, cache.isCompressed)){
+        		cache.isUsing = true;
+        		imageView.setImageBitmap(cache.bitmap);
+        		return;
+        	}
+    	}
+    	submitDisplayTask(url,imageView, allowCompress, cacheable);
+    }
     
     public void display(String url, ImageView imageView){
     	display(url, imageView, true, true, true);
@@ -92,26 +82,25 @@ public class LazyImageLoader {
     	display(url, imageView, false, false, false);
     }
     
-    
-    public void postUIThreadRunner(Runnable r){
-    	uiDrawableHandler.post(r);
-    }
-    
     private void submitDisplayTask(String url, ImageView imageView,boolean allowCompress, boolean cacheable){
-    	TaskRequest request = new TaskRequest(url, imageView);
+    	TaskRequest request = new TaskRequest(this, url, imageView);
     	request.allowCompress = allowCompress;
     	request.cacheable = cacheable;
-        targetViewsHolder.put(imageView, url);
+    	//调用到此方法，说明图片不在内存缓存中。先显示一张Stub图片。
+    	imageView.setImageResource(loaderOptions.imageStubResId);
+    	imageView.postInvalidate();
+    	//要在这里进行限制，不能submit太频繁。。。
         threadPool.submit(new DisplayTask(this,request));
+    }
+    
+    public void markUnuse(String url){
+    	CacheWrapper cache = memoryCache.get(url);
+    	if(cache != null) cache.isUsing = false;
     }
     
     public void clearCache() {
         memoryCache.clear();
         fileCache.clear();
-    }
-    
-    public LoaderOptions getOptions(){
-    	return loaderOptions;
     }
     
     public MemoryCache getMemoryCache(){
