@@ -51,31 +51,53 @@ public class LazyImageLoader {
         return (tag==null || !tag.equals(task.uri));
     }
     
-    public void display(String url, ImageView imageView){
+    private void display(String url, ImageView imageView, boolean allowCompress, boolean cacheable, boolean findInCache){
     	if(imageView == null)  return;
     	if(url == null){
     		imageView.setImageResource(loaderOptions.imageStubResId);
     		return;
     	}
-    	CacheWrapper cache = memoryCache.get(url);
-    	if(cache != null){
-    		imageView.setImageBitmap(cache.bitmap);
-    		return;
+    	
+    	if(findInCache){
+    		CacheWrapper cache = memoryCache.get(url);
+        	if(cache != null && compressVerify(allowCompress, cache.isCompressed)){
+        		imageView.setImageBitmap(cache.bitmap);
+        		return;
+        	}
     	}
-
-    	imageView.setImageResource(loaderOptions.imageStubResId);
-    	submitDisplayTask(url,imageView, true, true);
+    	submitDisplayTask(url,imageView, allowCompress, cacheable);
+    }
+    
+    static boolean compressVerify(boolean allowCompress,boolean isCompressed){
+		if(allowCompress) {
+			return true;
+		}else{
+			return !(allowCompress | isCompressed);
+		}
+	}
+    
+    public void display(String url, ImageView imageView){
+    	display(url, imageView, true, true, true);
+    }
+    
+    public void displayWithoutCompress(String url, ImageView imageView){
+    	display(url, imageView, false, true, true);
     }
     
     public void displayWithoutCache(String url, ImageView imageView){
-    	submitDisplayTask(url,imageView, true, false);
+    	display(url, imageView, true, false, false);
     }
+    
+    public void displayWithoutCompressAndCache(String url, ImageView imageView){
+    	display(url, imageView, false, false, false);
+    }
+    
     
     public void postUIThreadRunner(Runnable r){
     	uiDrawableHandler.post(r);
     }
     
-    public void submitDisplayTask(String url, ImageView imageView,boolean allowCompress, boolean cacheable){
+    private void submitDisplayTask(String url, ImageView imageView,boolean allowCompress, boolean cacheable){
     	TaskRequest request = new TaskRequest(url, imageView);
     	request.allowCompress = allowCompress;
     	request.cacheable = cacheable;
@@ -86,6 +108,10 @@ public class LazyImageLoader {
     public void clearCache() {
         memoryCache.clear();
         fileCache.clear();
+    }
+    
+    public LoaderOptions getOptions(){
+    	return loaderOptions;
     }
     
     public MemoryCache getMemoryCache(){

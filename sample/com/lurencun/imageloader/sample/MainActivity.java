@@ -21,7 +21,10 @@ public class MainActivity extends Activity {
 		
 		ImageView imageView = (ImageView) findViewById(R.id.image);
 		
-		LazyImageLoader.getLoader().submitDisplayTask("http://cdn.kpbz.net/uploads/allimg/2009-09/11164P6-1-21309.jpg", imageView,true,false);
+		String url = "http://cdn.kpbz.net/uploads/allimg/2009-09/11164P6-1-21309.jpg";
+		
+		LazyImageLoader.getLoader().display(url, imageView);
+//		LazyImageLoader.getLoader().submitDisplayTask("http://cdn.kpbz.net/uploads/allimg/2009-09/11164P6-1-21309.jpg", imageView,true,false);
 	}
 
 	

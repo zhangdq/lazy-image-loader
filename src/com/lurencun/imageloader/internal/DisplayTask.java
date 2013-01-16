@@ -21,7 +21,10 @@ public class DisplayTask implements Runnable {
 	public void run() {
 		if(loader.isViewReused(request)) return;
 		
+		request.view.setImageResource(loader.getOptions().imageStubResId);
+		
 		//Not a cache file , just a image file with specified path
+		//No cache
 		if(request.isLocalFile){
 			File localFile = new File(request.uri);
 			render(localFile, request);
