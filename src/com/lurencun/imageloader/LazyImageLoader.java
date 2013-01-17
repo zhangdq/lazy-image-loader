@@ -57,7 +57,7 @@ public class LazyImageLoader {
     	
     	Bitmap cacheBitmap = memoryCache.get(url);
     	if(cacheBitmap != null){
-    		uiDrawableHandler.post(new DisplayRunner(imageView, cacheBitmap));
+    		uiDrawableHandler.post(new DisplayRunner(imageView, cacheBitmap,options.displayAnimation));
     		return;
     	}
     	

@@ -1,5 +1,7 @@
 package com.lurencun.imageloader;
 
+import android.view.animation.Animation;
+
 
 /**
  * @author : 桥下一粒砂
@@ -17,8 +19,8 @@ public class LoaderOptions {
 	public final int threadPoolSize;
 	public final String cacheDir;
 	public final boolean logging;
+	public final Animation displayAnimation;
 	
-	public final int cacheDeamonDelay;
 	
 	private LoaderOptions(Builder builder){
 		imageStubResId = builder.imageStubResId;
@@ -27,9 +29,9 @@ public class LoaderOptions {
 		maxMemoryInByte = builder.maxMemoryInByte;
 		cacheDir = builder.cacheDir;
 		logging = builder.enableLogging;
-		cacheDeamonDelay = builder.cacheDeamonDelay;
 		threadPoolSize = builder.threadPoolSize;
 		maxWeakItems = builder.maxWeakItems;
+		displayAnimation = builder.displayAnimation;
 	}
 	
 	public static class Builder{
@@ -39,10 +41,9 @@ public class LoaderOptions {
     	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);//use 25% of available heap size
     	private String cacheDir = "_lrcImageLoaderCache";
     	private int threadPoolSize = 5;
-    	int maxWeakItems = 10;
+    	private int maxWeakItems = 10;
     	private boolean enableLogging = false;
-    	
-    	private int cacheDeamonDelay = 3 * 1000;
+    	private Animation displayAnimation;
     	
     	public Builder imageStubResId(int stubImage){
     		imageStubResId = stubImage;
@@ -81,6 +82,11 @@ public class LoaderOptions {
     	
     	public Builder maxWeakItems(int size){
     		maxWeakItems = size;
+    		return this;
+    	}
+    	
+    	public Builder displayAnimation(Animation anim){
+    		displayAnimation = anim;
     		return this;
     	}
     	

@@ -3,10 +3,13 @@ package com.lurencun.imageloader.sample;
 import java.util.Arrays;
 
 import android.app.Activity;
+import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -36,7 +39,6 @@ public class MainActivity extends Activity {
 			@Override
 			public View createView(LayoutInflater inflater, int position,String data) {
 				View view = inflater.inflate(R.layout.layout_image, null);
-				System.err.println(">>> 创建View"+view);
 				updateView(view, position, data);
 				return view;
 			}
