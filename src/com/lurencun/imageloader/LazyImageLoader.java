@@ -6,10 +6,18 @@ import java.util.WeakHashMap;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.ImageView;
 
 
 public class LazyImageLoader {
+	
+	public static final String VERSION = "v1.0.0";
+	
+	private static final String INFO = "[Lazy-imageloader] " +
+			"version:" + VERSION + " , " +
+			"SourceCode:https://github.com/chenyoca/lazy-image-loader" + " , " + 
+			"Email: chenyoca@gmail.com";
     
 	private static LazyImageLoader instance;
 	private final ThreadPoolManager threadPool;
@@ -23,9 +31,11 @@ public class LazyImageLoader {
     
     public static void init(Context context, LoaderOptions options){
     	loaderOptions = options;
+    	DisplayRunner.stubResid = loaderOptions.imageStubResId;
     	if(instance == null){
     		instance = new LazyImageLoader(context);
     	}
+    	Log.e("LazyImageLoader", INFO);
     }
     
     public static LazyImageLoader getLoader(){
@@ -59,7 +69,7 @@ public class LazyImageLoader {
     		CacheWrapper cache = memoryCache.get(url);
         	if(cache != null && compressVerify(allowCompress, cache.isCompressed)){
         		cache.setIsUsing();
-        		imageView.setImageBitmap(cache.bitmap);
+        		uiDrawableHandler.post(new DisplayRunner(imageView, cache.bitmap));
         		return;
         	}
     	}

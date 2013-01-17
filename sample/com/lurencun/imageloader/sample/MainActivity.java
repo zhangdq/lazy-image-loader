@@ -22,11 +22,10 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		LoaderOptions.Builder builder = new LoaderOptions.Builder();
-		builder
-		.cacheDir("aaaa0000___lazyImageLoader")
-		.enableLogging(true)
-		.imageStubResId(R.drawable.avatar_stub);
+		LoaderOptions.Builder builder = new LoaderOptions.Builder()
+			.cacheDir("aaaa0000___lazyImageLoader")
+			.enableLogging(true)
+			.imageStubResId(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());
 		
 		setContentView(R.layout.main);
@@ -48,7 +47,7 @@ public class MainActivity extends Activity {
 				TextView title = (TextView) view.findViewById(R.id.title);
 				
 				title.setText(data);
-				LazyImageLoader.getLoader().display(data, image);
+				LazyImageLoader.getLoader().displayWithoutCache(data, image);
 			}
 			
 		});

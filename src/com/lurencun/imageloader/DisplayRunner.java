@@ -5,6 +5,8 @@ import android.widget.ImageView;
 
 public class DisplayRunner implements Runnable {
 
+	public static int stubResid = -1;
+	
 	private final ImageView view;
 	private final Bitmap bitmap;
 	
@@ -17,8 +19,10 @@ public class DisplayRunner implements Runnable {
 	public void run() {
 		if(bitmap != null && !bitmap.isRecycled()){
 			view.setImageBitmap(bitmap);
-			view.postInvalidate();
+		}else{
+			if(stubResid>0) view.setImageResource(stubResid);
 		}
+		view.postInvalidate();
 	}
 
 }
