@@ -14,7 +14,7 @@ import android.widget.ImageView;
 
 public class LazyImageLoader {
 	
-	public static final String VERSION = "v1.0.0";
+	public static final String VERSION = "v1.1.0";
 	
 	private static LazyImageLoader instance;
 	private final ExecutorService taskExecutor;
@@ -71,5 +71,12 @@ public class LazyImageLoader {
     	imageView.setImageResource(options.imageStubResId);
     	imageView.postInvalidate();
     }
+    
+    public MemoryCache getMemoryCache(){
+    	return memoryCache;
+    }
 
+    public FileCache getFileCache(){
+    	return fileCache;
+    }
 }
