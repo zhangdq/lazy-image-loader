@@ -28,7 +28,7 @@ public final class TaskRequest {
 		isLocalFile = !target.startsWith("http"); 
 	}
 	
-	public boolean verifyViewReused(){
+	public boolean isViewReused(){
         String url = loader.displayViewsHolder.get(receiver);
         //当ImageView对应的Url不存在，或者不是原来的Url，则说明View被重用了。
         return ( url == null || !url.equals(target) );

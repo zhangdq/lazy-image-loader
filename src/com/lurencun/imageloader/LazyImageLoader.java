@@ -95,7 +95,6 @@ public class LazyImageLoader {
     	//调用到此方法，说明图片不在内存缓存中。先显示一张Stub图片。
     	imageView.setImageResource(loaderOptions.imageStubResId);
     	imageView.postInvalidate();
-    	//要在这里进行限制，不能submit太频繁。。。
         threadPool.submit(new DisplayTask(this,request));
     }
     

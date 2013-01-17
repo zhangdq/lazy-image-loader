@@ -21,14 +21,13 @@ public class DisplayTask implements Runnable {
 		//显示图片任务已经提交并运行，由于线程池调度顺序不确定，此时 View -> URL 的对应关系
 		//可能会由于View的重用而破坏。
 		//如果View被重用，则退出显示图片任务
-		if(request.verifyViewReused()) {
+		if(request.isViewReused()) {
 			return;
 		}
 		
 		//如果是本地图片，则直接显示
 		if(request.isLocalFile){
-			File localFile = new File(request.target);
-			render(localFile, request);
+			render(new File(request.target), request);
 		}
 		
 		// 文件缓存
@@ -41,7 +40,7 @@ public class DisplayTask implements Runnable {
 				cache = null;
 			}else{
 				//网络下载存在非常大的延时，先做View重用的检查，再render,因为render需要读取文件。
-				if(request.verifyViewReused()){
+				if(request.isViewReused()){
 					cache = null;;
 				}
 			}
@@ -55,7 +54,7 @@ public class DisplayTask implements Runnable {
 	void render(File file,TaskRequest request){
 		Bitmap bitmap = ImageUtil.decode(file,request);
 		//图片解码存在延时，View可能被重用。检查！
-		if(!request.verifyViewReused()){
+		if(!request.isViewReused()){
 			loader.uiDrawableHandler.post(new DisplayRunner(request.receiver, bitmap));
 			if(request.cacheable){
 				loader.getMemoryCache().put(request.target, bitmap, request.allowCompress);
