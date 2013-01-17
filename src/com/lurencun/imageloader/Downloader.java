@@ -11,8 +11,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public interface Downloader {
+	
+	public interface OnLoadingListener{
+		void onLoading(int blockSize);
+		void onStart(int totalSize);
+		void onComplete();
+	}
 
 	boolean load(String target, File save);
+	
+	void setOnLoadingListener(OnLoadingListener l);
 	
 	public static class SimpleDownloader implements Downloader{
 
@@ -22,6 +30,9 @@ public interface Downloader {
 		private static final int REDIRECT_RETRY_CONT = 3;
 		
 		private int manualRedirects = 0;
+		
+		private OnLoadingListener listener;
+		
 		
 		@Override
 		public boolean load(String url, File save) {
@@ -36,10 +47,10 @@ public interface Downloader {
 	            if (conn.getResponseCode() == SC_TEMP_REDIRECT) {
 	                redirect(save, conn);
 	            } else {
-	            	final int contentLength = conn.getContentLength();
+	            	if(listener != null) listener.onStart(conn.getContentLength());
 	                is = conn.getInputStream();
 	                os = new FileOutputStream(save);
-	                copyStream(contentLength, is, os);
+	                copyStream(is, os);
 	            }
 	        } catch (Throwable ex) {
 	            ex.printStackTrace();
@@ -66,14 +77,16 @@ public interface Downloader {
 	        return (HttpURLConnection) new URL(url).openConnection();
 	    }
 		
-		void copyStream(int totalSize,InputStream is, OutputStream os){
+		void copyStream(InputStream is, OutputStream os){
 	        final int bufferSize = 2 * 1024;
 	        try{
 	            byte[] bytes = new byte[bufferSize];
 	            int length = 0;
 	            while( (length = is.read(bytes, 0, bufferSize)) != -1){
 	            	os.write(bytes, 0, length);
+	            	if(listener != null) listener.onLoading(length);
 	            }
+	            if(listener != null) listener.onComplete();
 	        } catch(Exception exp){
 	        	exp.printStackTrace();
 	        }
@@ -88,6 +101,11 @@ public interface Downloader {
 	            e.printStackTrace();
 	        }
 	    }
+
+		@Override
+		public void setOnLoadingListener(OnLoadingListener l) {
+			this.listener = l;
+		}
 		
 	}
 }
