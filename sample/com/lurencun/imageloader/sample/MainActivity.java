@@ -58,6 +58,8 @@ public class MainActivity extends Activity {
 		adapter.update(Arrays.asList(URLS.urls));
 		
 	}
+	
+	
 
 	
 	

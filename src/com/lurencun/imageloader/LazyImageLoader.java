@@ -58,7 +58,7 @@ public class LazyImageLoader {
     	if(findInCache){
     		CacheWrapper cache = memoryCache.get(url);
         	if(cache != null && compressVerify(allowCompress, cache.isCompressed)){
-        		cache.isUsing = true;
+        		cache.setIsUsing();
         		imageView.setImageBitmap(cache.bitmap);
         		return;
         	}
@@ -68,10 +68,6 @@ public class LazyImageLoader {
     
     public void display(String url, ImageView imageView){
     	display(url, imageView, true, true, true);
-    }
-    
-    public void displayWithoutCompress(String url, ImageView imageView){
-    	display(url, imageView, false, true, true);
     }
     
     public void displayWithoutCache(String url, ImageView imageView){
@@ -91,11 +87,6 @@ public class LazyImageLoader {
     	imageView.postInvalidate();
     	//要在这里进行限制，不能submit太频繁。。。
         threadPool.submit(new DisplayTask(this,request));
-    }
-    
-    public void markUnuse(String url){
-    	CacheWrapper cache = memoryCache.get(url);
-    	if(cache != null) cache.isUsing = false;
     }
     
     public void clearCache() {

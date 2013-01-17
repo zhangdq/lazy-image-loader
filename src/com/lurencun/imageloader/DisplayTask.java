@@ -27,17 +27,17 @@ public class DisplayTask implements Runnable {
 		
 		//如果是本地图片，则直接显示
 		if(request.isLocalFile){
-			File localFile = new File(request.uri);
+			File localFile = new File(request.target);
 			render(localFile, request);
 		}
 		
 		// 文件缓存
-		File cache = loader.fileCache.get(request.uri);
+		File cache = loader.fileCache.get(request.target);
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
 			//文件不存在，则从网络下载
 			Downloader downloader = new Downloader.SimpleDownloader();
-			if(!downloader.load(request.uri, cache)){
+			if(!downloader.load(request.target, cache)){
 				cache = null;
 			}else{
 				//网络下载存在非常大的延时，先做View重用的检查，再render,因为render需要读取文件。
@@ -54,12 +54,12 @@ public class DisplayTask implements Runnable {
 	
 	void render(File file,TaskRequest request){
 		Bitmap bitmap = ImageUtil.decode(file,request);
-		if(request.cacheable){
-			loader.getMemoryCache().put(request.uri, bitmap, request.allowCompress);
-		}
 		//图片解码存在延时，View可能被重用。检查！
 		if(!request.verifyViewReused()){
-			loader.uiDrawableHandler.post(new DisplayRunner(request.view, bitmap));
+			loader.uiDrawableHandler.post(new DisplayRunner(request.receiver, bitmap));
+			if(request.cacheable){
+				loader.getMemoryCache().put(request.target, bitmap, request.allowCompress);
+			}
 		}
 	}
 

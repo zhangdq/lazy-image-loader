@@ -15,7 +15,7 @@ public class DisplayRunner implements Runnable {
 	
 	@Override
 	public void run() {
-		if(!bitmap.isRecycled()){
+		if(bitmap != null && !bitmap.isRecycled()){
 			view.setImageBitmap(bitmap);
 			view.postInvalidate();
 		}

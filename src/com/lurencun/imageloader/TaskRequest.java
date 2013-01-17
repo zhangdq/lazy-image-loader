@@ -11,8 +11,8 @@ import android.widget.ImageView;
  */
 public final class TaskRequest {
 
-	public final String uri;
-	public final ImageView view;
+	public final String target;
+	public final ImageView receiver;
 	
 	public final boolean isLocalFile;
 	public final boolean alreadySubmit = true;
@@ -22,15 +22,15 @@ public final class TaskRequest {
 	public boolean cacheable = true;
 	
 	public TaskRequest(LazyImageLoader loader,String url, ImageView view){
-		this.uri = new String(url);
-		this.view = view;
+		this.target = new String(url);
+		this.receiver = view;
 		this.loader = loader;
-		isLocalFile = !uri.startsWith("http"); 
+		isLocalFile = !target.startsWith("http"); 
 	}
 	
 	public boolean verifyViewReused(){
-        String url = loader.displayViewsHolder.get(view);
+        String url = loader.displayViewsHolder.get(receiver);
         //当ImageView对应的Url不存在，或者不是原来的Url，则说明View被重用了。
-        return ( url == null || !url.equals(uri) );
+        return ( url == null || !url.equals(target) );
 	}
 }

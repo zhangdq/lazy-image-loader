@@ -21,7 +21,7 @@ public class ImageUtil {
 				opts.inJustDecodeBounds = true;
 				BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
-				Size fixedSize = getImageSizeScaleTo(request.view);
+				Size fixedSize = getImageSizeScaleTo(request.receiver);
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
 			}
 			opts.inJustDecodeBounds = false;
