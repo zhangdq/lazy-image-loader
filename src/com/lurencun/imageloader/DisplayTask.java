@@ -18,9 +18,6 @@ public class DisplayTask implements Runnable {
 	
 	@Override
 	public void run() {
-		//显示图片任务已经提交并运行，由于线程池调度顺序不确定，此时 View -> URL 的对应关系
-		//可能会由于View的重用而破坏。
-		//如果View被重用，则退出显示图片任务
 		if(request.isViewReused()) {
 			return;
 		}
@@ -56,9 +53,10 @@ public class DisplayTask implements Runnable {
 		//图片解码存在延时，View可能被重用。检查！
 		if(!request.isViewReused()){
 			loader.uiDrawableHandler.post(new DisplayRunner(request.receiver, bitmap));
-			if(request.cacheable){
-				loader.getMemoryCache().put(request.target, bitmap, request.allowCompress);
-			}
+			loader.memoryCache.put(request.target, bitmap);
+		}else{
+			bitmap.recycle();
+			System.gc();
 		}
 	}
 

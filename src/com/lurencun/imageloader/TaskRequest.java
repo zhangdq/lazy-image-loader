@@ -19,7 +19,6 @@ public final class TaskRequest {
 	public final LazyImageLoader loader;
 	
 	public boolean allowCompress = true;
-	public boolean cacheable = true;
 	
 	public TaskRequest(LazyImageLoader loader,String url, ImageView view){
 		this.target = new String(url);

@@ -1,107 +1,84 @@
 package com.lurencun.imageloader;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.lang.ref.SoftReference;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import android.graphics.Bitmap;
+import android.support.v4.util.LruCache;
+import android.util.Log;
 
 public class MemoryCache {
 
-    private final Map<String, CacheWrapper> CACHE;
-    private long allocatedSize;
-    private long maxMemoryLimit;
-    
-    private final boolean enableLogging;
-    
+	static boolean DEBUG = true;
+	
+	static final String TAG = "MemoryCache";
+	
+	final LruCache<String, Bitmap> strongLRUCache;
+	static final int SOFT_CACHE_CAPACITY = 10;
+	final LinkedHashMap<String, SoftReference<Bitmap>> weakSoftRefCache;
+	
     public MemoryCache(LoaderOptions options){
-    	CACHE = Collections.synchronizedMap(new LinkedHashMap<String, CacheWrapper>(10,1.5f,true));
-    	enableLogging = options.logging;
-    	maxMemoryLimit = options.maxMemoryInByte;
-        if(enableLogging) {
-        	System.out.println("【INFO】~ [Memory Cache INIT] => { maxSize:" + getSizeFormat(maxMemoryLimit)+" }");
+    	if(DEBUG){
+			final String message = "[MEMORY CACHE] ~ LRUCache will set to %s , WeakCache will set to %d items(MAX).";
+			Log.d(TAG, String.format(message, makeSizeFormat(options.maxMemoryInByte),SOFT_CACHE_CAPACITY));
+		}
+    	strongLRUCache = new LruCache<String, Bitmap>(options.maxMemoryInByte){
+			@Override
+			public int sizeOf(String key, Bitmap value){
+				return value.getRowBytes() * value.getHeight();
+			}
+			@Override
+			protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue){
+				if(DEBUG){
+					final String message = "[LRU CACHE] ~ LRUCache is full, cache to WEAKCACHE. KEY{%s}";
+					Log.d(TAG, String.format(message, key));
+				}
+				weakSoftRefCache.put(key, new SoftReference<Bitmap>(oldValue));
+			}
+    	};
+    	weakSoftRefCache = new LinkedHashMap<String, SoftReference<Bitmap>>(SOFT_CACHE_CAPACITY, 0.75f,true){
+			private static final long serialVersionUID = 4011842900981762651L;
+			@Override
+			protected boolean removeEldestEntry(Entry<String, SoftReference<Bitmap>> eldest) {
+				return size() > SOFT_CACHE_CAPACITY;
+			}
+    	};
+    }
+    
+    public void put(String key, Bitmap bitmap){
+        synchronized(strongLRUCache){  
+        	strongLRUCache.put(key, bitmap);
+        }
+    }
+    
+    public Bitmap get(String key){  
+        synchronized(strongLRUCache){  
+            final Bitmap bitmap = strongLRUCache.get(key);  
+            if(bitmap != null)  
+                return bitmap;  
         }
         
-    }
-    
-    public CacheWrapper get(String url){
-		try {
-			synchronized(CACHE){
-				CacheWrapper cache = CACHE.containsKey(url) ? CACHE.get(url) : null;
-				if(cache != null && !cache.isRecycled()){
-					cache.setIsUsing();
-					return cache;
-				}else{
-					return null;
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return null;
-		}
-    }
-    
-    public void put(String url, Bitmap bitmap, boolean isCompressed){
-    	keepCacheSize();
-    	try{
-    		remove(url);
-    		CacheWrapper cache = new CacheWrapper(url, bitmap, isCompressed);
-    		allocatedSize += cache.size;
-    		CACHE.put(url, cache);
-    	}catch(Throwable exp){
-    		exp.printStackTrace();
-    	}
-    }
-    
-    public void clear() {
-        try{
-        	Iterator<Entry<String, CacheWrapper>> iter = CACHE.entrySet().iterator();
-        	while(iter.hasNext()){
-        		Entry<String, CacheWrapper> entry = iter.next();
-        		CacheWrapper cache = entry.getValue();
-        		allocatedSize -= cache.size;
-        		cache.forceRecycle();
-        		iter.remove();
-        	}
-        }catch(Throwable exp){
-        	exp.printStackTrace();
-        }
-    }
-    
-    public void remove(String url){
-    	if(url == null) return;
-    	CacheWrapper cache = get(url);
-    	if(cache != null){
-    		allocatedSize -= cache.size;
-    		cache.recycle();
-    		CACHE.remove(url);
-    	}
-    }
-    
-    void keepCacheSize(){
-    	if(enableLogging) {
-			System.out.println("【INFO】~ [Memory KeepSize] => " +
-					"{ "+"CacheSize: " + getSizeFormat(allocatedSize) + ", ObjectCount: " + CACHE.size()+" }");
-		}
-    	if(allocatedSize > maxMemoryLimit){
-        	Iterator<Entry<String, CacheWrapper>> iter = CACHE.entrySet().iterator();
-        	while(iter.hasNext()){
-        		Entry<String, CacheWrapper> entry = iter.next();
-        		CacheWrapper cache = entry.getValue();
-        		if(cache.isUsing()) continue;
-        		allocatedSize -= cache.size;
-        		cache.recycle();
-        		iter.remove();
-            	if(allocatedSize <= maxMemoryLimit) break;
-        	}
-        }
-    }
-    
-    String getSizeFormat(long size){
-    	return String.format(Locale.getDefault(),"%.1f MB", (size/1024./1024.));
+        synchronized(weakSoftRefCache){  
+            SoftReference<Bitmap> reference = weakSoftRefCache.get(key);  
+            if(reference != null){  
+                final Bitmap bitmap = reference.get();  
+                if(bitmap != null)  
+                    return bitmap;  
+                else{
+                	if(DEBUG){
+                		final String message = "[WEAK CACHE] ~ A weak refence has been recycle, remove from WEAKCACHE. KEY={%s}";
+    					Log.d(TAG, String.format(message, key));
+    				}
+                    weakSoftRefCache.remove(key);  
+                }  
+            }  
+        }  
+        return null;  
     }
 
+    static String makeSizeFormat(int size){
+    	return String.format(Locale.getDefault(),"%.2f MB", (size/1024./1024.));
+    }
+    
 }

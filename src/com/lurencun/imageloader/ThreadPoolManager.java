@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadPoolManager {
 	
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	public final static int INALID_REQUEST = -1;
 	
@@ -48,17 +48,17 @@ public class ThreadPoolManager {
 			@Override
 			public void run() {
 				Iterator<Map.Entry<Integer, Future<?>>> iter = taskHolder.entrySet().iterator();
+//				System.err.println("【INFO】~ [Thread Pool Manager] " +
+//						"{ TaskCount:"+taskExecutor.getTaskCount()+ ", PoolSize:"+taskExecutor.getPoolSize()+ " }");
 				while (iter.hasNext()) {
 					Map.Entry<Integer, Future<?>> entry = (Map.Entry<Integer, Future<?>>) iter.next();
 					Future<?> task = entry.getValue();
 					int key = entry.getKey();
 					if(task.isDone() || task.isCancelled()){
 						taskHolder.remove(key);
-						if(DEBUG){
-							System.out.println("【INFO】~ [Thread Pool Deamon ] Remove task reference { id:"+key+" }");
-							System.out.println("【INFO】~ [Thread Pool Manager] " +
-									"{ TaskCount:"+taskExecutor.getTaskCount()+ ", PoolSize:"+taskExecutor.getPoolSize()+ " }");
-						}
+//						if(DEBUG){
+//							System.err.println("【INFO】~ [Thread Pool Deamon ] Remove task reference { id:"+key+" }");
+//						}
 					}
 				}
 			}

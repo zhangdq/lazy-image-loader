@@ -12,7 +12,9 @@ public class LoaderOptions {
 	public final int imageStubResId;
 	public final int connectionTimeOut;
 	public final int readTimeOut;
-	public final long maxMemoryInByte;
+	public final int maxMemoryInByte;
+	public final int maxWeakItems;
+	public final int threadPoolSize;
 	public final String cacheDir;
 	public final boolean logging;
 	
@@ -26,14 +28,18 @@ public class LoaderOptions {
 		cacheDir = builder.cacheDir;
 		logging = builder.enableLogging;
 		cacheDeamonDelay = builder.cacheDeamonDelay;
+		threadPoolSize = builder.threadPoolSize;
+		maxWeakItems = builder.maxWeakItems;
 	}
 	
 	public static class Builder{
     	private int imageStubResId = -1;
     	private int connectionTimeOut = 30 * 1000;
     	private int readTimeOut = 30 * 1000;
-    	private long maxMemoryInByte = Runtime.getRuntime().maxMemory()/4;//use 25% of available heap size
+    	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);//use 25% of available heap size
     	private String cacheDir = "_lrcImageLoaderCache";
+    	private int threadPoolSize = 5;
+    	int maxWeakItems = 10;
     	private boolean enableLogging = false;
     	
     	private int cacheDeamonDelay = 3 * 1000;
@@ -65,6 +71,16 @@ public class LoaderOptions {
     	
     	public Builder enableLogging(boolean logging){
     		enableLogging = logging;
+    		return this;
+    	}
+    	
+    	public Builder threadPoolSize(int size){
+    		threadPoolSize = size;
+    		return this;
+    	}
+    	
+    	public Builder maxWeakItems(int size){
+    		maxWeakItems = size;
     		return this;
     	}
     	
