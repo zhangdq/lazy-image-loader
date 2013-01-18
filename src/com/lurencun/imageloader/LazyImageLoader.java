@@ -6,12 +6,11 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.lurencun.imageloader.internal.DisplayRunner;
-
+import com.lurencun.imageloader.internal.TaskPlotter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.ImageView;
 
 
@@ -19,19 +18,24 @@ public class LazyImageLoader {
 	
 	public static final String VERSION = "v1.1.0";
 	
+	public static boolean DEBUG = true;
+
+	static final String TAG = "LazyImageLoader";
+	
 	private static LazyImageLoader instance;
 	private final ExecutorService taskExecutor;
+	private final ExecutorService taskSubmitExecutor;
 	MemoryCache memoryCache;
 
 	// default , 包访问权限
 	FileCache fileCache;
-    Map<ImageView, String> displayViewsHolder;
+    Map<ImageView, String> targetToDisplayerMappingHolder;
     Handler uiDrawableHandler = new Handler();
     static LoaderOptions options;
     
     public static void init(Context context, LoaderOptions ops){
     	options = ops;
-    	DisplayRunner.stubResid = options.imageStubResId;
+    	TaskPlotter.stubResID = options.imageStubResId;
     	if(instance == null){
     		instance = new LazyImageLoader(context);
     	}
@@ -43,34 +47,41 @@ public class LazyImageLoader {
     }
     
     private LazyImageLoader(Context context){
+    	DEBUG = options.logging;
         fileCache = new FileCache(context,options);
         memoryCache = new MemoryCache(options);
-        taskExecutor = Executors.newFixedThreadPool(options.maxMemoryInByte);
-        displayViewsHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
+        taskExecutor = Executors.newCachedThreadPool();
+        taskSubmitExecutor = Executors.newCachedThreadPool();
+        targetToDisplayerMappingHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     }
     
-    public void display(String url, ImageView imageView){
-    	
-    	if(imageView == null)  return;
-    	if(url == null){
-    		setViewStub(imageView);
+    public void display(final String targetUri, final ImageView displayer){
+    	if(displayer == null)  return;
+    	if(targetUri == null){
+    		if(LazyImageLoader.DEBUG){
+				final String message = "[DISPLAY] ~ Given a NULL targetUri. ";
+				Log.e(TAG, String.format(message));
+			}
+    		clearWithStub(displayer);
     		return;
     	}
-    	displayViewsHolder.put(imageView, url);
-    	
-    	Bitmap cacheBitmap = memoryCache.get(url);
-    	if(cacheBitmap != null){
-    		uiDrawableHandler.post(new DisplayRunner(imageView, cacheBitmap,options.displayAnimation));
-    		return;
-    	}
-    	
-    	TaskRequest request = new TaskRequest(this, url, imageView);
-    	taskExecutor.submit(new DisplayTask(this,request));
-    	setViewStub(imageView);
+    	clearWithStub(displayer);
+    	taskSubmitExecutor.submit(new Runnable(){
+			@Override
+			public void run() {
+				taskExecutor.submit(new DisplayInvoker(displayer,targetUri, LazyImageLoader.this));
+			}
+    	});
+    	targetToDisplayerMappingHolder.put(displayer, targetUri);
     }
     
+    boolean isTargetDisplayerMappingBroken(String target, ImageView displayer){
+    	String currentMappingValue = targetToDisplayerMappingHolder.get(displayer);
+    	return (currentMappingValue != null && currentMappingValue != target);
+    }
     
-    void setViewStub(ImageView imageView){
+    void clearWithStub(ImageView imageView){
+    	imageView.setImageBitmap(null);
     	imageView.setImageResource(options.imageStubResId);
     	imageView.postInvalidate();
     }

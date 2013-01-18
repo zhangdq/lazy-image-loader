@@ -3,6 +3,8 @@ package com.lurencun.imageloader;
 import java.lang.ref.SoftReference;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
@@ -17,6 +19,8 @@ public class MemoryCache {
 	final LruCache<String, Bitmap> strongLRUCache;
 	static final int SOFT_CACHE_CAPACITY = 10;
 	final LinkedHashMap<String, SoftReference<Bitmap>> weakSoftRefCache;
+	
+	ExecutorService recycleEldestThread = Executors.newFixedThreadPool(2);
 	
     public MemoryCache(LoaderOptions options){
     	if(DEBUG){
@@ -33,7 +37,7 @@ public class MemoryCache {
 				if(DEBUG){
 					final String message = "[LRU CACHE] ~ LRUCACHE full, cache to WEAKCACHE. INFO{ size:%s, target:\"%s\" }";
 					final String size = makeSizeFormat(strongLRUCache.size());
-					Log.d(TAG, String.format(message, size, key));
+					Log.i(TAG, String.format(message, size, key));
 				}
 				weakSoftRefCache.put(key, new SoftReference<Bitmap>(oldValue));
 			}
@@ -42,7 +46,28 @@ public class MemoryCache {
 			private static final long serialVersionUID = 4011842900981762651L;
 			@Override
 			protected boolean removeEldestEntry(Entry<String, SoftReference<Bitmap>> eldest) {
-				return size() > SOFT_CACHE_CAPACITY;
+				boolean drop = size() > SOFT_CACHE_CAPACITY;
+				if(drop){
+					final Entry<String, SoftReference<Bitmap>> eldestRef = eldest;
+					recycleEldestThread.submit(new Runnable(){
+						@Override
+						public void run() {
+							final String key = eldestRef.getKey();
+							final SoftReference<Bitmap> value = eldestRef.getValue();
+							if(DEBUG){
+		                		final String message = "[WEAK CACHE] ~ Current item(Eldest) will be discard, remove from WEAKCACHE. INFO{ key:\"%s\" }";
+		    					Log.d(TAG, String.format(message, key));
+		    				}
+							Bitmap bitmap = value.get();
+							if(bitmap != null && !bitmap.isRecycled()){
+								bitmap.recycle();
+								System.gc();
+								weakSoftRefCache.remove(key);
+							}
+						}
+					});
+				}
+				return drop;
 			}
     	};
     }
@@ -64,15 +89,16 @@ public class MemoryCache {
             SoftReference<Bitmap> reference = weakSoftRefCache.get(key);  
             if(reference != null){  
                 final Bitmap bitmap = reference.get();  
-                if(bitmap != null)  
-                    return bitmap;  
-                else{
-                	if(DEBUG){
-                		final String message = "[WEAK CACHE] ~ Current item has been recycle, remove from WEAKCACHE. INFO{ key:\"%s\" }";
-    					Log.d(TAG, String.format(message, key));
-    				}
-                    weakSoftRefCache.remove(key);  
-                }  
+                if(bitmap != null){
+                	return bitmap;
+                }
+//                else{
+//                	if(DEBUG){
+//                		final String message = "[WEAK CACHE] ~ Current item has been recycle, remove from WEAKCACHE. INFO{ key:\"%s\" }";
+//    					Log.d(TAG, String.format(message, key));
+//    				}
+//                    weakSoftRefCache.remove(key);  
+//                }  
             }  
         }  
         return null;  

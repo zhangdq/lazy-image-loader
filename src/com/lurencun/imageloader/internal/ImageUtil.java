@@ -4,26 +4,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import com.lurencun.imageloader.TaskRequest;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
+
 public class ImageUtil {
 
-	public static Bitmap decode(File file,TaskRequest request){
+	public static Bitmap decode(File file,TaskParams params){
 		if(file == null || !file.exists()) return null;
 		try {
 			BitmapFactory.Options opts = new BitmapFactory.Options();
-			if (request.allowCompress) {
+			if (params.allowCompress) {
 				FileInputStream mersureStream = new FileInputStream(file);
 				opts.inJustDecodeBounds = true;
 				BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
-				Size fixedSize = getImageSizeScaleTo(request.displayer);
+				Size fixedSize = getImageSizeScaleTo(params.displayer);
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
 			}
 			opts.inJustDecodeBounds = false;
