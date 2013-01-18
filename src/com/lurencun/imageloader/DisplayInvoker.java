@@ -76,8 +76,7 @@ public class DisplayInvoker implements Runnable {
 						final String message = "[DRAWING] ~ Sended BITMAP to draw, but it was NULL or has been RECYCLED. ";
 						Log.e(TAG, String.format(message));
 					}
-					params.displayer.setImageBitmap(null);
-					params.displayer.setImageResource(LazyImageLoader.options.imageStubResId);
+					loader.clearWithStub(params.displayer);
 				}
 				params.displayer.postInvalidate();
 			}

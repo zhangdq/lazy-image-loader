@@ -6,8 +6,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.lurencun.imageloader.internal.TaskPlotter;
-
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -35,7 +33,6 @@ public class LazyImageLoader {
     
     public static void init(Context context, LoaderOptions ops){
     	options = ops;
-    	TaskPlotter.stubResID = options.imageStubResId;
     	if(instance == null){
     		instance = new LazyImageLoader(context);
     	}
