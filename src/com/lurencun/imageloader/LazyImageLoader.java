@@ -6,6 +6,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.lurencun.imageloader.internal.DisplayRunner;
+
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;

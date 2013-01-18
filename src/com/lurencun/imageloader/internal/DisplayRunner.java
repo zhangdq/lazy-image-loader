@@ -1,4 +1,4 @@
-package com.lurencun.imageloader;
+package com.lurencun.imageloader.internal;
 
 import android.graphics.Bitmap;
 import android.view.animation.Animation;

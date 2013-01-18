@@ -1,8 +1,10 @@
-package com.lurencun.imageloader;
+package com.lurencun.imageloader.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import com.lurencun.imageloader.TaskRequest;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,7 +23,7 @@ public class ImageUtil {
 				opts.inJustDecodeBounds = true;
 				BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
-				Size fixedSize = getImageSizeScaleTo(request.receiver);
+				Size fixedSize = getImageSizeScaleTo(request.displayer);
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
 			}
 			opts.inJustDecodeBounds = false;

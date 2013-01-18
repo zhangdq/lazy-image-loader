@@ -20,7 +20,7 @@ public class MemoryCache {
 	
     public MemoryCache(LoaderOptions options){
     	if(DEBUG){
-			final String message = "[MEMORY CACHE] ~ LRUCache will set to %s , WeakCache will set to %d items(MAX).";
+			final String message = "[MEMORY CACHE] ~ LRUCACHE set to %s , WEAKCACHE will set to %d items(MAX).";
 			Log.d(TAG, String.format(message, makeSizeFormat(options.maxMemoryInByte),SOFT_CACHE_CAPACITY));
 		}
     	strongLRUCache = new LruCache<String, Bitmap>(options.maxMemoryInByte){
@@ -31,8 +31,9 @@ public class MemoryCache {
 			@Override
 			protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue){
 				if(DEBUG){
-					final String message = "[LRU CACHE] ~ LRUCache is full, cache to WEAKCACHE. KEY{%s}";
-					Log.d(TAG, String.format(message, key));
+					final String message = "[LRU CACHE] ~ LRUCACHE full, cache to WEAKCACHE. INFO{ size:%s, target:\"%s\" }";
+					final String size = makeSizeFormat(strongLRUCache.size());
+					Log.d(TAG, String.format(message, size, key));
 				}
 				weakSoftRefCache.put(key, new SoftReference<Bitmap>(oldValue));
 			}
@@ -67,7 +68,7 @@ public class MemoryCache {
                     return bitmap;  
                 else{
                 	if(DEBUG){
-                		final String message = "[WEAK CACHE] ~ A weak refence has been recycle, remove from WEAKCACHE. KEY={%s}";
+                		final String message = "[WEAK CACHE] ~ Current item has been recycle, remove from WEAKCACHE. INFO{ key:\"%s\" }";
     					Log.d(TAG, String.format(message, key));
     				}
                     weakSoftRefCache.remove(key);  

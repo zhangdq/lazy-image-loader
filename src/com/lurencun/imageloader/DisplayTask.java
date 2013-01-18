@@ -2,6 +2,10 @@ package com.lurencun.imageloader;
 
 import java.io.File;
 
+import com.lurencun.imageloader.internal.DisplayRunner;
+import com.lurencun.imageloader.internal.Downloader;
+import com.lurencun.imageloader.internal.ImageUtil;
+
 import android.graphics.Bitmap;
 
 
@@ -24,15 +28,15 @@ public class DisplayTask implements Runnable {
 		
 		//如果是本地图片，则直接显示
 		if(request.isLocalFile){
-			render(new File(request.target), request);
+			render(new File(request.targetUri), request);
 		}
 		
 		// 文件缓存
-		File cache = loader.fileCache.get(request.target);
+		File cache = loader.fileCache.get(request.fileName);
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
 			Downloader downloader = new Downloader.SimpleDownloader();
-			if(!downloader.load(request.target, cache)){
+			if(!downloader.load(request.targetUri, cache)){
 				cache = null;
 			}else{
 				if(request.isViewReused()){
@@ -50,8 +54,8 @@ public class DisplayTask implements Runnable {
 		Bitmap bitmap = ImageUtil.decode(file,request);
 		//图片解码存在延时，View可能被重用。检查！
 		if(!request.isViewReused()){
-			loader.uiDrawableHandler.post(new DisplayRunner(request.receiver, bitmap,LazyImageLoader.options.displayAnimation));
-			loader.memoryCache.put(request.target, bitmap);
+			loader.uiDrawableHandler.post(new DisplayRunner(request.displayer, bitmap,LazyImageLoader.options.displayAnimation));
+			loader.memoryCache.put(request.targetUri, bitmap);
 		}else{
 			bitmap.recycle();
 			System.gc();

@@ -1,4 +1,4 @@
-package com.lurencun.imageloader;
+package com.lurencun.imageloader.internal;
 
 import java.io.Closeable;
 import java.io.File;
