@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.lurencun.imageloader.internal.CacheManager;
+
 
 public class LazyImageLoader {
 	
@@ -23,13 +25,11 @@ public class LazyImageLoader {
 	private static LazyImageLoader instance;
 	private final ExecutorService taskExecutor;
 	private final ExecutorService taskSubmitExecutor;
-	MemoryCache memoryCache;
-
-	// default , 包访问权限
-	FileCache fileCache;
-    Map<ImageView, String> targetToDisplayerMappingHolder;
-    Handler uiDrawableHandler = new Handler();
+	
+    final Map<ImageView, String> targetToDisplayerMappingHolder;
+    final Handler uiDrawableHandler = new Handler();
     static LoaderOptions options;
+    final CacheManager cacheManager;
     
     public static void init(Context context, LoaderOptions ops){
     	options = ops;
@@ -45,8 +45,7 @@ public class LazyImageLoader {
     
     private LazyImageLoader(Context context){
     	DEBUG = options.logging;
-        fileCache = new FileCache(context,options);
-        memoryCache = new MemoryCache(options);
+    	cacheManager = new CacheManager(context, options);
         taskExecutor = Executors.newCachedThreadPool();
         taskSubmitExecutor = Executors.newCachedThreadPool();
         targetToDisplayerMappingHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
@@ -56,7 +55,7 @@ public class LazyImageLoader {
     	if(displayer == null)  return;
     	if(targetUri == null){
     		if(LazyImageLoader.DEBUG){
-				final String message = "[DISPLAY] ~ Given a NULL targetUri. ";
+				final String message = "[DISPLAY] ~ Given a NULL targetUri, set stub for the view. ";
 				Log.e(TAG, String.format(message));
 			}
     		clearWithStub(displayer);
@@ -83,11 +82,4 @@ public class LazyImageLoader {
     	imageView.postInvalidate();
     }
     
-    public MemoryCache getMemoryCache(){
-    	return memoryCache;
-    }
-
-    public FileCache getFileCache(){
-    	return fileCache;
-    }
 }

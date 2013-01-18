@@ -10,9 +10,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public interface Downloader {
+public interface WebFetcher {
 	
-	public interface OnLoadingListener{
+	public interface OnFetchListener{
 		void onLoading(int blockSize);
 		void onStart(int totalSize);
 		void onComplete();
@@ -20,9 +20,9 @@ public interface Downloader {
 
 	boolean load(String target, File save);
 	
-	void setOnLoadingListener(OnLoadingListener l);
+	void setOnLoadingListener(OnFetchListener l);
 	
-	public static class SimpleDownloader implements Downloader{
+	public static class SimpleDownloader implements WebFetcher{
 
 		private static final int CONNECT_TIMEOUT = 30 * 1000;
 		private static final int READ_TIMEOUT = 30 * 1000;
@@ -31,7 +31,7 @@ public interface Downloader {
 		
 		private int manualRedirects = 0;
 		
-		private OnLoadingListener listener;
+		private OnFetchListener listener;
 		
 		
 		@Override
@@ -103,7 +103,7 @@ public interface Downloader {
 	    }
 
 		@Override
-		public void setOnLoadingListener(OnLoadingListener l) {
+		public void setOnLoadingListener(OnFetchListener l) {
 			this.listener = l;
 		}
 		

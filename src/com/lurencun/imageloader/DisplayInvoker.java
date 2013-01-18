@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.lurencun.imageloader.internal.Downloader;
+import com.lurencun.imageloader.internal.WebFetcher;
 import com.lurencun.imageloader.internal.ImageUtil;
 import com.lurencun.imageloader.internal.TaskParams;
 
@@ -26,10 +26,18 @@ public class DisplayInvoker implements Runnable {
 	@Override
 	public void run() {
 		
-		File cache = loader.fileCache.get(params.diskCacheKey);
+		if(LazyImageLoader.options.enableMemoryCache){
+			Bitmap bitmap = loader.cacheManager.getFromMemoryCache(params.memoryCacheKey);
+			if(bitmap != null){
+				loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
+				return;
+			}
+		}
+		
+		File cache = loader.cacheManager.getFromDiskCache(params.diskCacheKey);
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
-			Downloader downloader = new Downloader.SimpleDownloader();
+			WebFetcher downloader = new WebFetcher.SimpleDownloader();
 			final boolean downloadStatus = downloader.load(params.targetUri, cache);
 			if(!downloadStatus){
 				if(LazyImageLoader.DEBUG){
@@ -45,42 +53,13 @@ public class DisplayInvoker implements Runnable {
 				cache = null;
 			}
 		}
-		render(cache);
-		cache = null;
-	}
-	
-	void render(File file){
-		if(file == null) return;
-		final Bitmap bitmap = ImageUtil.decode(file,params);
-		loader.uiDrawableHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				//图片解码存在延时，View可能被重用。检查！
-				if(!loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer)){
-					drawToDisplayer();
-				}else{
-					bitmap.recycle();
-					loader.clearWithStub(params.displayer);
-					if(LazyImageLoader.DEBUG){
-						final String message = "[DECODE] ~ Sended FILE to decode, but DISPLAY view seem to been reused. ";
-						Log.e(TAG, String.format(message));
-					}
-				}
+		if(cache != null){
+			Bitmap bitmap = ImageUtil.decode(cache, params);
+			loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
+			if(params.allowCacheToMemory){
+				loader.cacheManager.addToMemoryCache(params.memoryCacheKey, bitmap);
 			}
-			
-			void drawToDisplayer(){
-				if(bitmap != null && !bitmap.isRecycled()){
-					params.displayer.setImageBitmap(bitmap);
-				}else{
-					if(LazyImageLoader.DEBUG){
-						final String message = "[DRAWING] ~ Sended BITMAP to draw, but it was NULL or has been RECYCLED. ";
-						Log.e(TAG, String.format(message));
-					}
-					loader.clearWithStub(params.displayer);
-				}
-				params.displayer.postInvalidate();
-			}
-		});
+		}
 	}
 
 }

@@ -14,6 +14,9 @@ public class LoaderOptions {
 	public final int imageStubResId;
 	public final int connectionTimeOut;
 	public final int readTimeOut;
+	
+	public final boolean enableMemoryCache;
+	
 	public final int maxMemoryInByte;
 	public final int maxWeakItems;
 	public final int threadPoolSize;
@@ -32,6 +35,7 @@ public class LoaderOptions {
 		threadPoolSize = builder.threadPoolSize;
 		maxWeakItems = builder.maxWeakItems;
 		displayAnimation = builder.displayAnimation;
+		enableMemoryCache = builder.enableMemoryCache;
 	}
 	
 	public static class Builder{
@@ -43,10 +47,11 @@ public class LoaderOptions {
     	private int threadPoolSize = 5;
     	private int maxWeakItems = 10;
     	private boolean enableLogging = false;
+    	private boolean enableMemoryCache = true;
     	private Animation displayAnimation;
     	
-    	public Builder imageStubResId(int stubImage){
-    		imageStubResId = stubImage;
+    	public Builder imageStubResId(int resid){
+    		imageStubResId = resid;
     		return this;
     	}
     	
@@ -60,8 +65,8 @@ public class LoaderOptions {
     		return this;
     	}
     	
-    	public Builder maxMemoryInByte(int stubImage){
-    		imageStubResId = stubImage;
+    	public Builder maxMemoryInByte(int size){
+    		imageStubResId = size;
     		return this;
     	}
     	
@@ -70,8 +75,13 @@ public class LoaderOptions {
     		return this;
     	}
     	
-    	public Builder enableLogging(boolean logging){
-    		enableLogging = logging;
+    	public Builder enableLogging(boolean enable){
+    		enableLogging = enable;
+    		return this;
+    	}
+    	
+    	public Builder enableMemoryCache(boolean enable){
+    		enableMemoryCache = enable;
     		return this;
     	}
     	

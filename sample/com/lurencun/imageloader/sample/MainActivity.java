@@ -3,18 +3,14 @@ package com.lurencun.imageloader.sample;
 import java.util.Arrays;
 
 import android.app.Activity;
-import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.lurencun.android.adapter.AbstractAdapter;
-import com.lurencun.android.adapter.HolderAdapter;
 import com.lurencun.android.adapter.ViewBuilder;
 import com.lurencun.imageloader.LazyImageLoader;
 import com.lurencun.imageloader.LoaderOptions;
@@ -27,6 +23,7 @@ public class MainActivity extends Activity {
 		LoaderOptions.Builder builder = new LoaderOptions.Builder()
 			.cacheDir("aaaa0000___lazyImageLoader")
 			.enableLogging(true)
+			.enableMemoryCache(true)
 			.imageStubResId(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());
 		

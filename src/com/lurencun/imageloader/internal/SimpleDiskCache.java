@@ -1,15 +1,17 @@
-package com.lurencun.imageloader;
+package com.lurencun.imageloader.internal;
 
 import java.io.File;
 
 import android.content.Context;
 import android.os.Environment;
 
-public class FileCache {
+import com.lurencun.imageloader.LoaderOptions;
+
+public class SimpleDiskCache {
     
     private File cacheDir;
     
-    public FileCache(Context context, LoaderOptions options){
+    public SimpleDiskCache(Context context, LoaderOptions options){
     	String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)){
         	cacheDir = new File(Environment.getExternalStorageDirectory(),options.cacheDir);
@@ -27,8 +29,8 @@ public class FileCache {
     }
     
     public void clear(){
-        File[] files=cacheDir.listFiles();
-        if(files==null) return;
+        File[] files = cacheDir.listFiles();
+        if(files == null) return;
         for(File file : files){
         	file.delete();
         }

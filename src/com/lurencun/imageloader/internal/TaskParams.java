@@ -11,13 +11,17 @@ public class TaskParams {
 	public final String targetUri;
 	public final ImageView displayer;
 	public final boolean allowCompress;
+	public final boolean allowCacheToMemory;
 	public final String diskCacheKey;
+	public final String memoryCacheKey;
 
 	public TaskParams(ImageView displayer,String targetUri){
+		this.allowCompress = true;
+		this.allowCacheToMemory = true;
 		this.targetUri = targetUri;
 		this.displayer = displayer;
 		this.diskCacheKey = urlToName(targetUri);
-		this.allowCompress = true;
+		this.memoryCacheKey = diskCacheKey;
 	}
 	
 	private static final int RADIX = 10 + 26;
