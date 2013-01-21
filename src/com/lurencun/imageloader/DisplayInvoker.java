@@ -1,6 +1,7 @@
 package com.lurencun.imageloader;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -15,11 +16,10 @@ public class DisplayInvoker implements Runnable {
 	static final String TAG = "DisplayInvoker";
 	
 	private final TaskParams params;
-	
 	private final LazyImageLoader loader;
 	
-	public DisplayInvoker(ImageView displayer,String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue, LazyImageLoader loader){
-		params = new TaskParams(displayer,targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue);
+	public DisplayInvoker(WeakReference<ImageView> displayer, String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue, LazyImageLoader loader){
+		params = new TaskParams(displayer, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue);
 		this.loader = loader;
 	}
 	
@@ -60,7 +60,7 @@ public class DisplayInvoker implements Runnable {
 			//图片解码存在延时，View可能被重用。检查！
 			if(!loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer())){
 				loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
-				if(params.allowMemoryCache){
+				if(LazyImageLoader.options.enableMemoryCache && params.allowMemoryCache){
 					loader.cacheManager.addToMemoryCache(params.memoryCacheKey, bitmap);
 				}
 			}else{

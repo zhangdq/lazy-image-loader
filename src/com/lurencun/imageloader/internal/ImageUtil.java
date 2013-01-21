@@ -27,10 +27,14 @@ public class ImageUtil {
 			if (params.allowCompress) {
 				FileInputStream mersureStream = new FileInputStream(file);
 				opts.inJustDecodeBounds = true;
-				BitmapFactory.decodeStream(mersureStream, null, opts);
+				Bitmap bitmap = BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
 				Size fixedSize = getImageSizeScaleTo(params.displayer());
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
+				if(bitmap != null && !bitmap.isRecycled()){
+					bitmap.recycle();
+				}
+				bitmap = null;
 			}
 			opts.inJustDecodeBounds = false;
 			FlushedInputStream stream = new FlushedInputStream(new FileInputStream(file));

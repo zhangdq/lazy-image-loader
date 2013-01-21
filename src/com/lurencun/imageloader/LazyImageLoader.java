@@ -1,5 +1,6 @@
 package com.lurencun.imageloader;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -31,7 +32,7 @@ public class LazyImageLoader {
     static LoaderOptions options;
     final CacheManager cacheManager;
     
-    static final int CORE_THREAD_SIZE = 3;
+    static final int CORE_THREAD_SIZE = 2;
     
     public static void init(Context context, LoaderOptions ops){
     	options = ops;
@@ -55,6 +56,9 @@ public class LazyImageLoader {
     
     public void display(final String targetUri, final ImageView displayer,final boolean allowCompress, final boolean allowCacheToMemory, final boolean isDiffSigntrue){
     	if(displayer == null)  return;
+    	
+    	final WeakReference<ImageView> displayerRef = new WeakReference<ImageView>(displayer);
+    	
     	if(targetUri == null){
     		if(LazyImageLoader.DEBUG){
 				final String message = "[DISPLAY] ~ Given a NULL targetUri, set stub for the view. ";
@@ -67,7 +71,7 @@ public class LazyImageLoader {
     	taskSubmitExecutor.submit(new Runnable(){
 			@Override
 			public void run() {
-				taskExecutor.submit(new DisplayInvoker(displayer,targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue, LazyImageLoader.this));
+				taskExecutor.submit(new DisplayInvoker(displayerRef, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue, LazyImageLoader.this));
 			}
     	});
     	targetToDisplayerMappingHolder.put(displayer, targetUri);

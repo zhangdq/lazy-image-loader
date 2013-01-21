@@ -68,7 +68,7 @@ public class CacheManager {
         }
 	}
 	
-	static String makeSizeFormat(int size){
+	public static String makeSizeFormat(long size){
     	return String.format(Locale.getDefault(),"%.2f MB", (size/1024./1024.));
     }
 

@@ -8,19 +8,19 @@ import java.security.NoSuchAlgorithmException;
 import android.widget.ImageView;
 
 public class TaskParams {
-	final WeakReference<ImageView> displayer;
 	
+	final WeakReference<ImageView> displayer;
 	public final String targetUri;
 	public final boolean allowCompress;
 	public final boolean allowMemoryCache;
 	public final String diskCacheKey;
 	public final String memoryCacheKey;
 
-	public TaskParams(ImageView displayer,String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue){
+	public TaskParams(WeakReference<ImageView> displayer,String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue){
 		this.allowCompress = allowCompress;
 		this.allowMemoryCache = allowCacheToMemory;
 		this.targetUri = targetUri;
-		this.displayer = new WeakReference<ImageView>(displayer);
+		this.displayer = displayer;
 		this.diskCacheKey = urlToName(targetUri);
 		this.memoryCacheKey = diskCacheKey + (isDiffSigntrue ? "#sign" : "");
 	}

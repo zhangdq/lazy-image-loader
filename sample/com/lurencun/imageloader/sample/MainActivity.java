@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.lurencun.android.adapter.AbstractAdapter;
 import com.lurencun.android.adapter.ViewBuilder;
 import com.lurencun.imageloader.LazyImageLoader;
 import com.lurencun.imageloader.LoaderOptions;
+import com.lurencun.imageloader.internal.CacheManager;
 
 public class MainActivity extends Activity {
 	
@@ -24,6 +26,7 @@ public class MainActivity extends Activity {
 			.cacheDir("aaaa0000___lazyImageLoader")
 			.enableLogging(true)
 			.enableMemoryCache(true)
+			.maxMemoryInByte(4 * 1024 *1024)
 			.imageStubResId(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());
 		
@@ -44,7 +47,7 @@ public class MainActivity extends Activity {
 			public void updateView(View view, int position, String data) {
 				ImageView image = (ImageView) view;
 				try{
-					LazyImageLoader.getLoader().display(data, image, true, true, true);
+					LazyImageLoader.getLoader().display(data, image, true, true, false);
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -75,6 +78,15 @@ public class MainActivity extends Activity {
 		list.setAdapter(adapter);
 		
 		adapter.update(Arrays.asList(URLS.urls));
+		
+//		new Handler().postDelayed(new Runnable(){
+//
+//			@Override
+//			public void run() {
+//				Runtime runtime = Runtime.getRuntime();
+//				System.out.println(String.format(">>>> FreeMemory:%s", CacheManager.makeSizeFormat(runtime.freeMemory())));
+//			}
+//		}, 3000);
 		
 	}
 	
