@@ -1,6 +1,5 @@
 package com.lurencun.imageloader;
 
-import android.view.animation.Animation;
 
 
 /**
@@ -14,16 +13,11 @@ public class LoaderOptions {
 	public final int imageStubResId;
 	public final int connectionTimeOut;
 	public final int readTimeOut;
-	
+	public final int submitDelay;
 	public final boolean enableMemoryCache;
-	
 	public final int maxMemoryInByte;
-	public final int maxWeakItems;
-	public final int threadPoolSize;
 	public final String cacheDir;
 	public final boolean logging;
-	public final Animation displayAnimation;
-	
 	
 	private LoaderOptions(Builder builder){
 		imageStubResId = builder.imageStubResId;
@@ -32,71 +26,98 @@ public class LoaderOptions {
 		maxMemoryInByte = builder.maxMemoryInByte;
 		cacheDir = builder.cacheDir;
 		logging = builder.enableLogging;
-		threadPoolSize = builder.threadPoolSize;
-		maxWeakItems = builder.maxWeakItems;
-		displayAnimation = builder.displayAnimation;
 		enableMemoryCache = builder.enableMemoryCache;
+		submitDelay = builder.submitDelay;
 	}
 	
 	public static class Builder{
     	private int imageStubResId = -1;
     	private int connectionTimeOut = 30 * 1000;
     	private int readTimeOut = 30 * 1000;
-    	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);//use 25% of available heap size
+    	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);
     	private String cacheDir = "_lrcImageLoaderCache";
-    	private int threadPoolSize = 5;
-    	private int maxWeakItems = 10;
+    	private int submitDelay = 101;
     	private boolean enableLogging = false;
     	private boolean enableMemoryCache = true;
-    	private Animation displayAnimation;
     	
+    	/**
+    	 * 设置默认资源图片
+    	 * @param resid
+    	 * @return
+    	 */
     	public Builder imageStubResId(int resid){
     		imageStubResId = resid;
     		return this;
     	}
     	
+    	/**
+    	 * 设置下载图片的连接超时
+    	 * @param millins
+    	 * @return
+    	 */
     	public Builder connectionTimeOut(int millins){
     		imageStubResId = millins;
     		return this;
     	}
     	
+    	/**
+    	 * 设置下载图片读取数据超时
+    	 * @param millins
+    	 * @return
+    	 */
     	public Builder readTimeOut(int millins){
     		imageStubResId = millins;
     		return this;
     	}
     	
+    	/**
+    	 * 设置提交显示图片的请求间隔(必须大于50ms)
+    	 * @param millins
+    	 * @return
+    	 */
+    	public Builder submitDelay(int millins){
+    		submitDelay = millins;
+    		if(submitDelay < 50) submitDelay = 50;
+    		return this;
+    	}
+    	
+    	/**
+    	 * 设置最大内存缓存(单位Byte)
+    	 * @param size
+    	 * @return
+    	 */
     	public Builder maxMemoryInByte(int size){
     		imageStubResId = size;
     		return this;
     	}
     	
+    	/**
+    	 * 设置缓存目录
+    	 * @param dirName
+    	 * @return
+    	 */
     	public Builder cacheDir(String dirName){
     		cacheDir = dirName;
     		return this;
     	}
     	
+    	/**
+    	 * 设置是否输出调试信息
+    	 * @param enable
+    	 * @return
+    	 */
     	public Builder enableLogging(boolean enable){
     		enableLogging = enable;
     		return this;
     	}
     	
+    	/**
+    	 * 设置是否开启内存缓存
+    	 * @param enable
+    	 * @return
+    	 */
     	public Builder enableMemoryCache(boolean enable){
     		enableMemoryCache = enable;
-    		return this;
-    	}
-    	
-    	public Builder threadPoolSize(int size){
-    		threadPoolSize = size;
-    		return this;
-    	}
-    	
-    	public Builder maxWeakItems(int size){
-    		maxWeakItems = size;
-    		return this;
-    	}
-    	
-    	public Builder displayAnimation(Animation anim){
-    		displayAnimation = anim;
     		return this;
     	}
     	

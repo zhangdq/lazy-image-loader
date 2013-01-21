@@ -29,6 +29,7 @@ public class LazyImageLoader {
 	
     final Map<ImageView, String> targetToDisplayerMappingHolder;
     final Handler uiDrawableHandler = new Handler();
+    final Handler delaySubmitHandler = new Handler();
     static LoaderOptions options;
     final CacheManager cacheManager;
     
@@ -56,9 +57,6 @@ public class LazyImageLoader {
     
     public void display(final String targetUri, final ImageView displayer,final boolean allowCompress, final boolean allowCacheToMemory, final boolean isDiffSigntrue){
     	if(displayer == null)  return;
-    	
-    	final WeakReference<ImageView> displayerRef = new WeakReference<ImageView>(displayer);
-    	
     	if(targetUri == null){
     		if(LazyImageLoader.DEBUG){
 				final String message = "[DISPLAY] ~ Given a NULL targetUri, set stub for the view. ";
@@ -67,14 +65,27 @@ public class LazyImageLoader {
     		clearWithStub(displayer);
     		return;
     	}
-    	clearWithStub(displayer);
     	taskSubmitExecutor.submit(new Runnable(){
 			@Override
 			public void run() {
+				sleep(options.submitDelay);
+				if(isTargetDisplayerMappingBroken(targetUri, displayer)) {
+					clearWithStub(displayer);
+					return;
+				}
+				WeakReference<ImageView> displayerRef = new WeakReference<ImageView>(displayer);
 				taskExecutor.submit(new DisplayInvoker(displayerRef, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue, LazyImageLoader.this));
 			}
     	});
     	targetToDisplayerMappingHolder.put(displayer, targetUri);
+    }
+    
+    void sleep(int sleep){
+    	try {
+			Thread.sleep(sleep);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
     }
     
     boolean isTargetDisplayerMappingBroken(String target, ImageView displayer){

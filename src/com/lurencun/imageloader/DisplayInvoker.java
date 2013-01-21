@@ -33,8 +33,10 @@ public class DisplayInvoker implements Runnable {
 				return;
 			}
 		}
+//		params.displayer().setBackgroundColor( -new Random().nextInt(0x00FFFFFF));
 		
 		File cache = loader.cacheManager.getFromDiskCache(params.diskCacheKey);
+		
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
 			Fetcher downloader = new Fetcher.SimpleFetcher();
@@ -56,23 +58,19 @@ public class DisplayInvoker implements Runnable {
 		}
 		if(cache != null){
 			Bitmap bitmap = ImageUtil.decode(cache, params);
-			if(bitmap == null) return;
-			//图片解码存在延时，View可能被重用。检查！
-			if(!loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer())){
+			if(loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer()) || 
+					bitmap == null) {
+				if(bitmap != null && !bitmap.isRecycled()){
+					bitmap.recycle();
+					loader.clearWithStub(params.displayer());
+					bitmap = null;
+				}
+				return;
+			}else{
 				loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
 				if(LazyImageLoader.options.enableMemoryCache && params.allowMemoryCache){
 					loader.cacheManager.addToMemoryCache(params.memoryCacheKey, bitmap);
 				}
-			}else{
-				if(LazyImageLoader.DEBUG){
-					final String message = "[DECODE] ~ Decoded, but DISPLAY view seem to been reused, abort to display. ";
-					Log.i(TAG, String.format(message));
-				}
-				if(!bitmap.isRecycled()){
-					bitmap.recycle();
-				}
-				loader.clearWithStub(params.displayer());
-				bitmap = null;
 			}
 		}
 	}

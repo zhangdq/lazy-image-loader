@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
 		LoaderOptions.Builder builder = new LoaderOptions.Builder()
 			.cacheDir("aaaa0000___lazyImageLoader")
 			.enableLogging(true)
-			.enableMemoryCache(true)
+			.enableMemoryCache(false)
 			.maxMemoryInByte(4 * 1024 *1024)
 			.imageStubResId(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());
@@ -46,11 +46,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void updateView(View view, int position, String data) {
 				ImageView image = (ImageView) view;
-				try{
-					LazyImageLoader.getLoader().display(data, image, true, true, false);
-				}catch(Exception e){
-					e.printStackTrace();
-				}
+				image.setImageResource(R.drawable.avatar_stub);
+				LazyImageLoader.getLoader().display(data, image, true, true, false);
 			}
 
 			@Override
