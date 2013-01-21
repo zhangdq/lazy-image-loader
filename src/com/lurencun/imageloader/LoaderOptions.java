@@ -87,7 +87,7 @@ public class LoaderOptions {
     	 * @return
     	 */
     	public Builder maxMemoryInByte(int size){
-    		imageStubResId = size;
+    		maxMemoryInByte = size;
     		return this;
     	}
     	

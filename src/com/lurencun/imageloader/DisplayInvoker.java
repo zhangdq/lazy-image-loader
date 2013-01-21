@@ -18,22 +18,13 @@ public class DisplayInvoker implements Runnable {
 	private final TaskParams params;
 	private final LazyImageLoader loader;
 	
-	public DisplayInvoker(WeakReference<ImageView> displayer, String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue, LazyImageLoader loader){
-		params = new TaskParams(displayer, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue);
+	public DisplayInvoker(TaskParams params, LazyImageLoader loader){
+		this.params = params;
 		this.loader = loader;
 	}
 	
 	@Override
 	public void run() {
-		
-		if(LazyImageLoader.options.enableMemoryCache){
-			Bitmap bitmap = loader.cacheManager.getFromMemoryCache(params.memoryCacheKey);
-			if(bitmap != null){
-				loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
-				return;
-			}
-		}
-//		params.displayer().setBackgroundColor( -new Random().nextInt(0x00FFFFFF));
 		
 		File cache = loader.cacheManager.getFromDiskCache(params.diskCacheKey);
 		

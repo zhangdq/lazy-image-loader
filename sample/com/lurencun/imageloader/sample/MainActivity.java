@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
 		LoaderOptions.Builder builder = new LoaderOptions.Builder()
 			.cacheDir("aaaa0000___lazyImageLoader")
 			.enableLogging(true)
-			.enableMemoryCache(false)
+			.enableMemoryCache(true)
 			.maxMemoryInByte(4 * 1024 *1024)
 			.imageStubResId(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());

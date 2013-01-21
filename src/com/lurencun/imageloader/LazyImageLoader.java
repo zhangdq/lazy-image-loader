@@ -8,11 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 
 import com.lurencun.imageloader.internal.CacheManager;
+import com.lurencun.imageloader.internal.TaskParams;
 
 
 public class LazyImageLoader {
@@ -68,13 +70,26 @@ public class LazyImageLoader {
     	taskSubmitExecutor.submit(new Runnable(){
 			@Override
 			public void run() {
+				WeakReference<ImageView> displayerRef = new WeakReference<ImageView>(displayer);
+				TaskParams params = new TaskParams(displayerRef, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue);
+				if(LazyImageLoader.options.enableMemoryCache){
+					Bitmap bitmap = cacheManager.getFromMemoryCache(params.memoryCacheKey);
+					if(bitmap != null){
+						uiDrawableHandler.post(new DrawWorker(bitmap, params, LazyImageLoader.this));
+						if(LazyImageLoader.DEBUG){
+							final String message = "[CACHE] ~ Cache hint { targetUrl:\"%s\" }";
+							Log.i(TAG, String.format(message, params.targetUri));
+						}
+						return;
+					}
+				}
 				sleep(options.submitDelay);
-				if(isTargetDisplayerMappingBroken(targetUri, displayer)) {
+				if(!isTargetDisplayerMappingBroken(targetUri, displayer)) {
+					taskExecutor.submit(new DisplayInvoker(params, LazyImageLoader.this));
+				}else{
 					clearWithStub(displayer);
 					return;
 				}
-				WeakReference<ImageView> displayerRef = new WeakReference<ImageView>(displayer);
-				taskExecutor.submit(new DisplayInvoker(displayerRef, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue, LazyImageLoader.this));
 			}
     	});
     	targetToDisplayerMappingHolder.put(displayer, targetUri);
