@@ -82,4 +82,8 @@ public class LazyImageLoader {
     	imageView.postInvalidate();
     }
     
+    public CacheManager getCacheManager(){
+    	return cacheManager;
+    }
+    
 }

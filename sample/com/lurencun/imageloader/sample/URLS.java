@@ -3,9 +3,9 @@ package com.lurencun.imageloader.sample;
 public interface URLS {
 
 	String[] urls = {
-			"http://cdn.kpbz.net/uploads/allimg/2009-09/11164P6-1-21309.jpg",
-			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-14N1.jpg",
-			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-25308.jpg",
+			"http://cdn.kpbz.net/uploads/allimg/2009-09/11164P6-1-21309.jpgXXX",
+			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-14N1.jpgXXX",
+			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-25308.jpgXXX",
 			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-3HY.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-42258.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-08/06205933-1-55593.jpg",

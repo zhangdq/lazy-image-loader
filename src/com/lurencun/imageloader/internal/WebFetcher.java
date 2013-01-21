@@ -18,11 +18,11 @@ public interface WebFetcher {
 		void onComplete();
 	}
 
-	boolean load(String target, File save);
+	boolean fetch(String target, File save);
 	
 	void setOnLoadingListener(OnFetchListener l);
 	
-	public static class SimpleDownloader implements WebFetcher{
+	public static class SimpleFetcher implements WebFetcher{
 
 		private static final int CONNECT_TIMEOUT = 30 * 1000;
 		private static final int READ_TIMEOUT = 30 * 1000;
@@ -35,7 +35,7 @@ public interface WebFetcher {
 		
 		
 		@Override
-		public boolean load(String url, File save) {
+		public boolean fetch(String url, File save) {
 			InputStream is = null;
 	        OutputStream os = null;
 	        HttpURLConnection conn = null;
@@ -53,8 +53,9 @@ public interface WebFetcher {
 	                copyStream(is, os);
 	            }
 	        } catch (Throwable ex) {
+	        	status = false;
 	            ex.printStackTrace();
-	            status = false;
+	            
 	        } finally {
 	            if (conn != null) {
 	                conn.disconnect();
@@ -67,7 +68,7 @@ public interface WebFetcher {
 		
 		void redirect(File save, HttpURLConnection conn) {
 	        if (manualRedirects++ < REDIRECT_RETRY_CONT) {
-	        	load(conn.getHeaderField("Location"), save);
+	        	fetch(conn.getHeaderField("Location"), save);
 	        } else {
 	            manualRedirects = 0;
 	        }

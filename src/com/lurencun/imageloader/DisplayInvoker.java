@@ -37,8 +37,8 @@ public class DisplayInvoker implements Runnable {
 		File cache = loader.cacheManager.getFromDiskCache(params.diskCacheKey);
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
-			WebFetcher downloader = new WebFetcher.SimpleDownloader();
-			final boolean downloadStatus = downloader.load(params.targetUri, cache);
+			WebFetcher downloader = new WebFetcher.SimpleFetcher();
+			final boolean downloadStatus = downloader.fetch(params.targetUri, cache);
 			if(!downloadStatus){
 				if(LazyImageLoader.DEBUG){
 					final String message = "[DOWNLOAD] ~ Download **FAILURE**. INFO{ targetUrl:\"%s\" }";
