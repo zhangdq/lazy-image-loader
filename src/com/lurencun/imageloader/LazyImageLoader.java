@@ -59,14 +59,8 @@ public class LazyImageLoader {
     
     public void display(final String targetUri, final ImageView displayer,final boolean allowCompress, final boolean allowCacheToMemory, final boolean isDiffSigntrue){
     	if(displayer == null)  return;
-    	if(targetUri == null){
-    		if(LazyImageLoader.DEBUG){
-				final String message = "[DISPLAY] ~ Given a NULL targetUri, set stub for the view. ";
-				Log.e(TAG, String.format(message));
-			}
-    		clearWithStub(displayer);
-    		return;
-    	}
+    	clearWithStub(displayer);
+    	if(targetUri == null) return;
     	taskSubmitExecutor.submit(new Runnable(){
 			@Override
 			public void run() {

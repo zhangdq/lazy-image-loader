@@ -45,7 +45,7 @@ public class LoaderOptions {
     	 * @param resid
     	 * @return
     	 */
-    	public Builder imageStubResId(int resid){
+    	public Builder setImageStub(int resid){
     		imageStubResId = resid;
     		return this;
     	}
@@ -55,7 +55,7 @@ public class LoaderOptions {
     	 * @param millins
     	 * @return
     	 */
-    	public Builder connectionTimeOut(int millins){
+    	public Builder setConnectionTimeOut(int millins){
     		imageStubResId = millins;
     		return this;
     	}
@@ -65,7 +65,7 @@ public class LoaderOptions {
     	 * @param millins
     	 * @return
     	 */
-    	public Builder readTimeOut(int millins){
+    	public Builder setReadTimeOut(int millins){
     		imageStubResId = millins;
     		return this;
     	}
@@ -75,7 +75,7 @@ public class LoaderOptions {
     	 * @param millins
     	 * @return
     	 */
-    	public Builder submitDelay(int millins){
+    	public Builder setDisplayRequestDelay(int millins){
     		submitDelay = millins;
     		if(submitDelay < 50) submitDelay = 50;
     		return this;
@@ -86,7 +86,7 @@ public class LoaderOptions {
     	 * @param size
     	 * @return
     	 */
-    	public Builder maxMemoryInByte(int size){
+    	public Builder setMaxMemoryInByte(int size){
     		maxMemoryInByte = size;
     		return this;
     	}
@@ -96,7 +96,7 @@ public class LoaderOptions {
     	 * @param dirName
     	 * @return
     	 */
-    	public Builder cacheDir(String dirName){
+    	public Builder setCacheDir(String dirName){
     		cacheDir = dirName;
     		return this;
     	}
@@ -106,7 +106,7 @@ public class LoaderOptions {
     	 * @param enable
     	 * @return
     	 */
-    	public Builder enableLogging(boolean enable){
+    	public Builder setEnableLogging(boolean enable){
     		enableLogging = enable;
     		return this;
     	}
@@ -116,7 +116,7 @@ public class LoaderOptions {
     	 * @param enable
     	 * @return
     	 */
-    	public Builder enableMemoryCache(boolean enable){
+    	public Builder setEnableMemoryCache(boolean enable){
     		enableMemoryCache = enable;
     		return this;
     	}

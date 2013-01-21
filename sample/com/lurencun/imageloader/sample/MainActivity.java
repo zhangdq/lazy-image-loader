@@ -23,11 +23,11 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		LoaderOptions.Builder builder = new LoaderOptions.Builder()
-			.cacheDir("aaaa0000___lazyImageLoader")
-			.enableLogging(true)
-			.enableMemoryCache(true)
-			.maxMemoryInByte(4 * 1024 *1024)
-			.imageStubResId(R.drawable.avatar_stub);
+			.setCacheDir("aaaa0000___lazyImageLoader")
+			.setEnableLogging(true)
+			.setEnableMemoryCache(true)
+			.setMaxMemoryInByte(4 * 1024 *1024)
+			.setImageStub(R.drawable.avatar_stub);
 		LazyImageLoader.init(getBaseContext(), builder.build());
 		
 		setContentView(R.layout.main);

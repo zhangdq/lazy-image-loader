@@ -28,12 +28,11 @@ public class DisplayInvoker implements Runnable {
 		
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
-			Fetcher downloader = new Fetcher.SimpleFetcher();
-			final boolean downloadStatus = downloader.fetch(params.targetUri, cache);
-			if(!downloadStatus){
+			Fetcher fetcher = new Fetcher.SimpleFetcher();
+			if( !fetcher.fetch(params.targetUri, cache) ){
 				if(LazyImageLoader.DEBUG){
 					final String message = "[DOWNLOAD] ~ Download **FAILURE**. INFO{ targetUrl:\"%s\" }";
-					Log.i(TAG, String.format(message, params.targetUri));
+					Log.e(TAG, String.format(message, params.targetUri));
 				}
 				cache.delete();
 				cache = null;
