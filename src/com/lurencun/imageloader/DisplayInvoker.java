@@ -1,11 +1,9 @@
 package com.lurencun.imageloader;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.lurencun.imageloader.internal.Fetcher;
 import com.lurencun.imageloader.internal.ImageUtil;
