@@ -2,6 +2,7 @@ package com.lurencun.imageloader;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.lurencun.imageloader.internal.TaskParams;
 
@@ -21,33 +22,24 @@ public class DrawWorker implements Runnable{
 	
 	@Override
 	public void run() {
-		//图片解码存在延时，View可能被重用。检查！
-		if(!loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer)){
-			drawToDisplayer();
-		}else{
+		ImageView displayer = params.displayer();
+		if(displayer == null){
+			if(LazyImageLoader.DEBUG){
+				final String message = "[DRAWING] ~ The display view had been recycle, abort to display. ";
+				Log.e(TAG, String.format(message));
+			}
+		}
+		synchronized(displayer){
 			if(bitmap != null && !bitmap.isRecycled()){
-				bitmap.recycle();
+				displayer.setImageBitmap(bitmap);
+			}else{
+				if(LazyImageLoader.DEBUG){
+					final String message = "[DRAWING] ~ Sended BITMAP to draw, but it was NULL or has been RECYCLED. ";
+					Log.e(TAG, String.format(message));
+				}
+				loader.clearWithStub(displayer);
 			}
-			loader.clearWithStub(params.displayer);
-			if(LazyImageLoader.DEBUG){
-				final String message = "[DECODE] ~ Sended FILE to decode, but DISPLAY view seem to been reused. ";
-				Log.e(TAG, String.format(message));
-			}
-			bitmap = null;
+			displayer.postInvalidate();
 		}
 	}
-	
-	void drawToDisplayer(){
-		if(bitmap != null && !bitmap.isRecycled()){
-			params.displayer.setImageBitmap(bitmap);
-		}else{
-			if(LazyImageLoader.DEBUG){
-				final String message = "[DRAWING] ~ Sended BITMAP to draw, but it was NULL or has been RECYCLED. ";
-				Log.e(TAG, String.format(message));
-			}
-			loader.clearWithStub(params.displayer);
-		}
-		params.displayer.postInvalidate();
-	}
-	
 }

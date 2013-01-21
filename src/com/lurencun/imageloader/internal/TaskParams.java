@@ -1,5 +1,6 @@
 package com.lurencun.imageloader.internal;
 
+import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -7,21 +8,25 @@ import java.security.NoSuchAlgorithmException;
 import android.widget.ImageView;
 
 public class TaskParams {
-
+	final WeakReference<ImageView> displayer;
+	
 	public final String targetUri;
-	public final ImageView displayer;
 	public final boolean allowCompress;
-	public final boolean allowCacheToMemory;
+	public final boolean allowMemoryCache;
 	public final String diskCacheKey;
 	public final String memoryCacheKey;
 
-	public TaskParams(ImageView displayer,String targetUri){
-		this.allowCompress = true;
-		this.allowCacheToMemory = true;
+	public TaskParams(ImageView displayer,String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue){
+		this.allowCompress = allowCompress;
+		this.allowMemoryCache = allowCacheToMemory;
 		this.targetUri = targetUri;
-		this.displayer = displayer;
+		this.displayer = new WeakReference<ImageView>(displayer);
 		this.diskCacheKey = urlToName(targetUri);
-		this.memoryCacheKey = diskCacheKey;
+		this.memoryCacheKey = diskCacheKey + (isDiffSigntrue ? "#sign" : "");
+	}
+	
+	public ImageView displayer(){
+		return displayer.get();
 	}
 	
 	private static final int RADIX = 10 + 26;

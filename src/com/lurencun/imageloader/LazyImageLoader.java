@@ -31,6 +31,8 @@ public class LazyImageLoader {
     static LoaderOptions options;
     final CacheManager cacheManager;
     
+    static final int CORE_THREAD_SIZE = 3;
+    
     public static void init(Context context, LoaderOptions ops){
     	options = ops;
     	if(instance == null){
@@ -46,12 +48,12 @@ public class LazyImageLoader {
     private LazyImageLoader(Context context){
     	DEBUG = options.logging;
     	cacheManager = new CacheManager(context, options);
-        taskExecutor = Executors.newCachedThreadPool();
-        taskSubmitExecutor = Executors.newCachedThreadPool();
+        taskExecutor = Executors.newFixedThreadPool(CORE_THREAD_SIZE * 2);
+        taskSubmitExecutor = Executors.newFixedThreadPool(CORE_THREAD_SIZE);
         targetToDisplayerMappingHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     }
     
-    public void display(final String targetUri, final ImageView displayer){
+    public void display(final String targetUri, final ImageView displayer,final boolean allowCompress, final boolean allowCacheToMemory, final boolean isDiffSigntrue){
     	if(displayer == null)  return;
     	if(targetUri == null){
     		if(LazyImageLoader.DEBUG){
@@ -65,7 +67,7 @@ public class LazyImageLoader {
     	taskSubmitExecutor.submit(new Runnable(){
 			@Override
 			public void run() {
-				taskExecutor.submit(new DisplayInvoker(displayer,targetUri, LazyImageLoader.this));
+				taskExecutor.submit(new DisplayInvoker(displayer,targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue, LazyImageLoader.this));
 			}
     	});
     	targetToDisplayerMappingHolder.put(displayer, targetUri);
@@ -77,6 +79,7 @@ public class LazyImageLoader {
     }
     
     void clearWithStub(ImageView imageView){
+    	if(imageView == null) return;
     	imageView.setImageBitmap(null);
     	imageView.setImageResource(options.imageStubResId);
     	imageView.postInvalidate();

@@ -10,8 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public interface WebFetcher {
-	
+public interface Fetcher {
+
 	public interface OnFetchListener{
 		void onLoading(int blockSize);
 		void onStart(int totalSize);
@@ -19,21 +19,20 @@ public interface WebFetcher {
 	}
 
 	boolean fetch(String target, File save);
-	
-	void setOnLoadingListener(OnFetchListener l);
-	
-	public static class SimpleFetcher implements WebFetcher{
 
+	void setOnLoadingListener(OnFetchListener l);
+
+	public static class SimpleFetcher implements Fetcher{
+		
 		private static final int CONNECT_TIMEOUT = 30 * 1000;
 		private static final int READ_TIMEOUT = 30 * 1000;
 		private static final int SC_TEMP_REDIRECT = 307;
 		private static final int REDIRECT_RETRY_CONT = 3;
-		
+
 		private int manualRedirects = 0;
-		
+
 		private OnFetchListener listener;
-		
-		
+
 		@Override
 		public boolean fetch(String url, File save) {
 			InputStream is = null;
@@ -53,9 +52,8 @@ public interface WebFetcher {
 	                copyStream(is, os);
 	            }
 	        } catch (Throwable ex) {
-	        	status = false;
 	            ex.printStackTrace();
-	            
+	            status = false;
 	        } finally {
 	            if (conn != null) {
 	                conn.disconnect();
@@ -65,7 +63,7 @@ public interface WebFetcher {
 	        }
 	        return status;
 		}
-		
+
 		void redirect(File save, HttpURLConnection conn) {
 	        if (manualRedirects++ < REDIRECT_RETRY_CONT) {
 	        	fetch(conn.getHeaderField("Location"), save);
@@ -73,11 +71,11 @@ public interface WebFetcher {
 	            manualRedirects = 0;
 	        }
 	    }
-		
+
 		HttpURLConnection openConnection(String url) throws IOException, MalformedURLException {
 	        return (HttpURLConnection) new URL(url).openConnection();
 	    }
-		
+
 		void copyStream(InputStream is, OutputStream os){
 	        final int bufferSize = 2 * 1024;
 	        try{
@@ -92,7 +90,7 @@ public interface WebFetcher {
 	        	exp.printStackTrace();
 	        }
 	    }
-		
+
 		void closeStream(Closeable stream) {
 	        try {
 	            if (stream != null) {
@@ -107,6 +105,6 @@ public interface WebFetcher {
 		public void setOnLoadingListener(OnFetchListener l) {
 			this.listener = l;
 		}
-		
+
 	}
 }

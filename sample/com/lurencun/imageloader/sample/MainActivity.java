@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
 			public void updateView(View view, int position, String data) {
 				ImageView image = (ImageView) view;
 				try{
-					LazyImageLoader.getLoader().display(data, image);
+					LazyImageLoader.getLoader().display(data, image, true, true, true);
 				}catch(Exception e){
 					e.printStackTrace();
 				}

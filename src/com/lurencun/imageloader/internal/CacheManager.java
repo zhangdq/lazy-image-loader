@@ -1,6 +1,7 @@
 package com.lurencun.imageloader.internal;
 
 import java.io.File;
+import java.util.Locale;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,6 +21,10 @@ public class CacheManager {
 	public CacheManager(Context context,LoaderOptions options){
 		diskCache = new SimpleDiskCache(context, options);
 		if(options.enableMemoryCache){
+			if(LazyImageLoader.DEBUG){
+				final String message = "[MEMORY CACHE] ~ Memory cache set up to %s";
+				Log.i(TAG, String.format(message, makeSizeFormat(options.maxMemoryInByte)));
+			}
 			memoryCache = new LruCache<String, Bitmap>(options.maxMemoryInByte) {
 	            @Override
 	            protected int sizeOf(String key, Bitmap bitmap) {
@@ -62,5 +67,9 @@ public class CacheManager {
 			memoryCache.evictAll();
         }
 	}
+	
+	static String makeSizeFormat(int size){
+    	return String.format(Locale.getDefault(),"%.2f MB", (size/1024./1024.));
+    }
 
 }

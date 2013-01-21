@@ -2,16 +2,23 @@ package com.lurencun.imageloader.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import com.lurencun.imageloader.LazyImageLoader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
 
 public class ImageUtil {
+	
+	final static String TAG = "ImageUtil";
 
 	public static Bitmap decode(File file,TaskParams params){
 		if(file == null || !file.exists()) return null;
@@ -22,13 +29,20 @@ public class ImageUtil {
 				opts.inJustDecodeBounds = true;
 				BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
-				Size fixedSize = getImageSizeScaleTo(params.displayer);
+				Size fixedSize = getImageSizeScaleTo(params.displayer());
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
 			}
 			opts.inJustDecodeBounds = false;
-			FileInputStream outputStream = new FileInputStream(file);
-			Bitmap bitmap = BitmapFactory.decodeStream(outputStream, null, opts);
-			outputStream.close();
+			FlushedInputStream stream = new FlushedInputStream(new FileInputStream(file));
+			Bitmap bitmap = BitmapFactory.decodeStream(stream, null, opts);
+			stream.close();
+			if(bitmap == null){
+				if(LazyImageLoader.DEBUG){
+					final String message = "[DECODE] ~ Found a file cannot be decode, DELETE it for redownload.";
+					Log.e(TAG, String.format(message));
+				}
+				file.delete();
+			}
 			return bitmap;
 		} catch (IOException exp) {
 			exp.printStackTrace();
@@ -94,5 +108,29 @@ public class ImageUtil {
     		return width*height;
     	}
     	
+    }
+    
+    static class FlushedInputStream extends FilterInputStream {
+        public FlushedInputStream(InputStream inputStream) {
+            super(inputStream);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long totalBytesSkipped = 0L;
+            while (totalBytesSkipped < n) {
+                long bytesSkipped = in.skip(n - totalBytesSkipped);
+                if (bytesSkipped == 0L) {
+                    int b = read();
+                    if (b < 0) {
+                        break;  // we reached EOF
+                    } else {
+                        bytesSkipped = 1; // we read one byte
+                    }
+                }
+                totalBytesSkipped += bytesSkipped;
+            }
+            return totalBytesSkipped;
+        }
     }
 }
