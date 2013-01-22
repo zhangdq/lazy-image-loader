@@ -15,9 +15,10 @@ public class LoaderOptions {
 	public final int readTimeOut;
 	public final int submitDelay;
 	public final boolean enableMemoryCache;
+	public final boolean enablePostInvalidate;
 	public final int maxMemoryInByte;
 	public final String cacheDir;
-	public final boolean logging;
+	public final boolean enableLogging;
 	
 	private LoaderOptions(Builder builder){
 		imageStubResId = builder.imageStubResId;
@@ -25,7 +26,8 @@ public class LoaderOptions {
 		readTimeOut = builder.readTimeOut;
 		maxMemoryInByte = builder.maxMemoryInByte;
 		cacheDir = builder.cacheDir;
-		logging = builder.enableLogging;
+		enableLogging = builder.enableLogging;
+		enablePostInvalidate = builder.enablePostInvalidate;
 		enableMemoryCache = builder.enableMemoryCache;
 		submitDelay = builder.submitDelay;
 	}
@@ -36,9 +38,10 @@ public class LoaderOptions {
     	private int readTimeOut = 30 * 1000;
     	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);
     	private String cacheDir = "_lrcImageLoaderCache";
-    	private int submitDelay = 101;
+    	private int submitDelay = 50;
     	private boolean enableLogging = false;
     	private boolean enableMemoryCache = true;
+    	private boolean enablePostInvalidate = false;
     	
     	/**
     	 * 设置默认资源图片

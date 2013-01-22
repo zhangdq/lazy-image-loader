@@ -50,12 +50,12 @@ public class DisplayInvoker implements Runnable {
 					bitmap == null) {
 				if(bitmap != null && !bitmap.isRecycled()){
 					bitmap.recycle();
-					loader.clearWithStub(params.displayer());
+					loader.uiDrawableHandler.post(new StubDrawWorker(params));
 					bitmap = null;
 				}
 				return;
 			}else{
-				loader.uiDrawableHandler.post(new DrawWorker(bitmap, params, loader));
+				loader.uiDrawableHandler.post(new BitmapDrawWorker(bitmap, params, loader));
 				if(LazyImageLoader.options.enableMemoryCache && params.allowMemoryCache){
 					loader.cacheManager.addToMemoryCache(params.memoryCacheKey, bitmap);
 				}

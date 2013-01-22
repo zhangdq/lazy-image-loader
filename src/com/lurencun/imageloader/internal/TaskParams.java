@@ -32,10 +32,16 @@ public class TaskParams {
 	private static final int RADIX = 10 + 26;
 	
 	public static String urlToName(String url){
+		if(url == null) return null;
 		byte[] md5 = MD5(url.getBytes());
 		BigInteger data = new BigInteger(md5).abs();
-		String suffix = url.substring(url.lastIndexOf("."));
-		return data.toString(RADIX) + (suffix.length() <= ".jpeg".length() ? suffix : "" );
+		int index = url.lastIndexOf(".");
+		if( index > 0 ){
+			String suffix = url.substring(index);
+			return data.toString(RADIX) + (suffix.length() <= ".jpeg".length() ? suffix : "" );
+		}else{
+			return data.toString(RADIX);
+		}
 	}
 
 	static byte[] MD5(byte[] data) {

@@ -6,7 +6,7 @@ import android.widget.ImageView;
 
 import com.lurencun.imageloader.internal.TaskParams;
 
-public class DrawWorker implements Runnable{
+public class BitmapDrawWorker implements Runnable{
 
 	static final String TAG = "DRAW";
 	
@@ -14,7 +14,7 @@ public class DrawWorker implements Runnable{
 	private LazyImageLoader loader;
 	private Bitmap bitmap;
 	
-	public DrawWorker(Bitmap bitmap, TaskParams params, LazyImageLoader loader){
+	public BitmapDrawWorker(Bitmap bitmap, TaskParams params, LazyImageLoader loader){
 		this.bitmap = bitmap;
 		this.params = params;
 		this.loader = loader;
@@ -28,6 +28,7 @@ public class DrawWorker implements Runnable{
 				final String message = "[DRAWING] ~ The display view had been recycle, abort to display. ";
 				Log.e(TAG, String.format(message));
 			}
+			return;
 		}
 		synchronized(displayer){
 			if(bitmap != null && !bitmap.isRecycled()){
@@ -37,9 +38,11 @@ public class DrawWorker implements Runnable{
 					final String message = "[DRAWING] ~ Sended BITMAP to draw, but it was NULL or has been RECYCLED. ";
 					Log.e(TAG, String.format(message));
 				}
-				loader.clearWithStub(displayer);
+				loader.uiDrawableHandler.post(new StubDrawWorker(params));
 			}
-			displayer.postInvalidate();
+			if(LazyImageLoader.options.enablePostInvalidate){
+	    		displayer.postInvalidate();
+	    	}
 		}
 	}
 }
