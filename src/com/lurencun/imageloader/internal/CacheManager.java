@@ -68,6 +68,17 @@ public class CacheManager {
         }
 	}
 	
+	void clearDiskCache(){
+		if(diskCache != null){
+			diskCache.clear();
+		}
+	}
+	
+	public void clearCache(){
+		clearMemoryCache();
+		clearDiskCache();
+	}
+	
 	public static String makeSizeFormat(long size){
     	return String.format(Locale.getDefault(),"%.2f MB", (size/1024./1024.));
     }
