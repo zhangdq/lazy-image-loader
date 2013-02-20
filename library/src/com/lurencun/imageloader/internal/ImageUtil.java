@@ -20,7 +20,7 @@ public class ImageUtil {
 	
 	final static String TAG = "ImageUtil";
 
-	public static Bitmap decode(File file,TaskParams params){
+	public static Bitmap decode(File file,TaskParams params, float scale){
 		if(file == null || !file.exists()) return null;
 		try {
 			BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -29,7 +29,7 @@ public class ImageUtil {
 				opts.inJustDecodeBounds = true;
 				Bitmap bitmap = BitmapFactory.decodeStream(mersureStream, null, opts);
 				mersureStream.close();
-				Size fixedSize = getImageSizeScaleTo(params.displayer());
+				Size fixedSize = getImageSizeScaleTo(params.displayer(), scale);
 				opts.inSampleSize = computeSampleSize(opts,-1, fixedSize.size());
 				if(bitmap != null && !bitmap.isRecycled()){
 					bitmap.recycle();
@@ -54,13 +54,13 @@ public class ImageUtil {
 		return null;
 	}
 	
-    public static Size getImageSizeScaleTo(ImageView imageView) {
+    public static Size getImageSizeScaleTo(ImageView imageView,float scale) {
 		DisplayMetrics displayMetrics = imageView.getContext().getResources().getDisplayMetrics();
 		LayoutParams params = imageView.getLayoutParams();
 		int width = params.width; // Get layout width parameter
-		if (width <= 0) width = displayMetrics.widthPixels;
+		if (width <= 0) width = (int) Math.round(displayMetrics.widthPixels*scale);
 		int height = params.height; // Get layout height parameter
-		if (height <= 0) height = displayMetrics.heightPixels;
+		if (height <= 0) height = (int) Math.round(displayMetrics.heightPixels*scale);
 		return new Size(width, height);
 	}
     

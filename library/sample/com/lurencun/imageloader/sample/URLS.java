@@ -26,6 +26,9 @@ public interface URLS {
 			"http://cdn.kpbz.net/uploads/allimg/2010-09/30192333-1-141112.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2010-09/30192333-1-151519.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-13b4.jpg",
+	};
+	
+	String[] url1 = {
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-2G55.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-34363.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-H9D.jpg",
@@ -44,7 +47,9 @@ public interface URLS {
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-263b5.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-2O050.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/10162602-1-2V542.jpg",
-			
+	};
+	
+	String[] urls2 = {
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/09125622-1-41N6.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/09125622-1-21524.jpg",
 			"http://cdn.kpbz.net/uploads/allimg/2009-01/09125622-1-9A11.jpg",

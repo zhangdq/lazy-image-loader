@@ -10,17 +10,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.widget.ImageView;
 
 import com.lurencun.imageloader.internal.CacheManager;
+import com.lurencun.imageloader.internal.DrawWorker;
 import com.lurencun.imageloader.internal.TaskParams;
 
 
 public class LazyImageLoader {
 	
-	public static final String VERSION = "v1.2.0";
+	public static final String VERSION = "v1.3.0";
 	
 	public static boolean DEBUG = true;
 
@@ -29,9 +29,10 @@ public class LazyImageLoader {
 	private static LazyImageLoader instance;
 	private final ExecutorService taskExecutor;
 	private final ScheduledExecutorService taskSubmitExecutor;
+	private final Handler uiDrawableHandler = new Handler();
 	
     final Map<ImageView, String> targetToDisplayerMappingHolder;
-    final Handler uiDrawableHandler = new Handler();
+    
     final Handler delaySubmitHandler = new Handler();
     static LoaderOptions options;
     final CacheManager cacheManager;
@@ -51,20 +52,20 @@ public class LazyImageLoader {
     	return instance;
     }
     
-    private Runnable taskDeamom = new Runnable(){
+    private Runnable taskExecutorDeamom = new Runnable(){
 		@Override
 		public void run() {
 			TaskParams params = null;
 			synchronized(taskStack){
 				if( !taskStack.isEmpty() ){
-					params = taskStack.pop();
+					params = taskStack.peek();
 				}
 			}
-			if(params == null){
-				return;
-			}
-			if(!isTargetDisplayerMappingBroken(params.targetUri, params.displayer())){
+			if(params != null && params.isReady && !isTargetDisplayerMappingBroken(params)){
+				params.isReady = false;
 				taskExecutor.submit(new DisplayInvoker(params, LazyImageLoader.this));
+			}else{
+				removeTask(params);
 			}
 		}
     };
@@ -75,27 +76,27 @@ public class LazyImageLoader {
         taskExecutor = Executors.newFixedThreadPool(CORE_THREAD_SIZE * 2);
         taskSubmitExecutor = Executors.newScheduledThreadPool(CORE_THREAD_SIZE);
         targetToDisplayerMappingHolder = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-        taskSubmitExecutor.scheduleAtFixedRate(taskDeamom, 0, options.submitPeriod, TimeUnit.MILLISECONDS);
+        taskSubmitExecutor.scheduleAtFixedRate(taskExecutorDeamom, 0, options.submitPeriod, TimeUnit.MILLISECONDS);
     }
     
     public void display(String targetUri, ImageView displayer,boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue){
     	if(displayer == null) {
     		return;
     	}
-		displayer.setImageResource(options.imageStubResId);
-		if(targetUri == null || "http://".length() > targetUri.length()) {
+		if( !isAvalidUri(targetUri)) {
+			displayer.setImageResource(options.imageStubResId);
 			return;
 		}
 		TaskParams params = new TaskParams(displayer, targetUri, allowCompress, allowCacheToMemory, isDiffSigntrue);
-		if(LazyImageLoader.options.enableMemoryCache){
-			Bitmap bitmap = cacheManager.getFromMemoryCache(params.memoryCacheKey);
-			if(bitmap != null){
-				uiDrawableHandler.post(new BitmapDrawWorker(bitmap, params));
-				return;
-			}
+		if(isTargetDisplayerMappingBroken(params)){
+			displayer.setImageResource(options.imageStubResId);
 		}
 		targetToDisplayerMappingHolder.put(displayer, targetUri);
-		synchronized(taskStack){
+		addTask(params);
+    }
+    
+    void addTask(TaskParams task){
+    	synchronized(taskStack){
 			int size = taskStack.size();
 			if( size > MAX_TASK_SIZE ){
 				int maxIndex = MAX_TASK_SIZE - 1;
@@ -104,14 +105,30 @@ public class LazyImageLoader {
 					taskStack.remove(i);
 				}
 			}
-			taskStack.push(params);
+    		taskStack.push(task);
 		}
-		
     }
     
-    boolean isTargetDisplayerMappingBroken(String target, ImageView displayer){
-    	String currentMappingValue = targetToDisplayerMappingHolder.get(displayer);
-    	return (currentMappingValue != null && currentMappingValue != target);
+    private void removeTask(TaskParams task){
+    	synchronized(taskStack){
+    		taskStack.remove(task);
+    	}
+    }
+    
+    void submitDisplayTask(DrawWorker task){
+    	uiDrawableHandler.post(task);
+    	removeTask(task.params);
+    }
+    
+    
+    final static int MIN_URI_LENGTH = "http://".length(); // file:/// -> 8   http:// -> 7
+    boolean isAvalidUri(String targetUri){
+    	return targetUri != null && MIN_URI_LENGTH < targetUri.length();
+    }
+    
+    boolean isTargetDisplayerMappingBroken(final TaskParams params){
+    	String currentMappingValue = targetToDisplayerMappingHolder.get(params.displayer());
+    	return (currentMappingValue != null && currentMappingValue != params.targetUri);
     }
     
     public CacheManager getCacheManager(){

@@ -23,9 +23,17 @@ public class DisplayInvoker implements Runnable {
 	
 	@Override
 	public void run() {
-		
+		//loader.uiDrawableHandler.post(new StubDrawWorker(params));
+		//缓存
+		if(LazyImageLoader.options.enableMemoryCache){
+			Bitmap bitmap = loader.cacheManager.getFromMemoryCache(params.memoryCacheKey);
+			if(bitmap != null && !isMappingBroken()){
+				loader.submitDisplayTask(new BitmapDrawWorker(bitmap, params));
+				return;
+			}
+		}
+		// 文件或者网络
 		File cache = loader.cacheManager.getFromDiskCache(params.diskCacheKey);
-		
 		// 一定会返回一个非Null的文件对象，因为网络下载需要文件对象（缓存路径）。
 		if(!cache.exists()){
 			Fetcher fetcher = new Fetcher.SimpleFetcher();
@@ -36,7 +44,7 @@ public class DisplayInvoker implements Runnable {
 				}
 				cache.delete();
 				cache = null;
-			}else if(loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer())){
+			}else if(isMappingBroken()){
 				if(LazyImageLoader.DEBUG){
 					final String message = "[DOWNLOAD] ~ Download **SUCCESS**, but DISPLAY view seem to been reused. ";
 					Log.i(TAG, String.format(message));
@@ -45,22 +53,24 @@ public class DisplayInvoker implements Runnable {
 			}
 		}
 		if(cache != null){
-			Bitmap bitmap = ImageUtil.decode(cache, params);
-			if(loader.isTargetDisplayerMappingBroken(params.targetUri, params.displayer()) || 
-					bitmap == null) {
+			Bitmap bitmap = ImageUtil.decode(cache, params,LazyImageLoader.options.scaleForFixSize);
+			if(isMappingBroken() || bitmap == null) {
 				if(bitmap != null && !bitmap.isRecycled()){
 					bitmap.recycle();
-					params.displayer().setImageResource(LazyImageLoader.options.imageStubResId);
+					loader.submitDisplayTask(new StubDrawWorker(params));
 					bitmap = null;
 				}
-				return;
 			}else{
-				loader.uiDrawableHandler.post(new BitmapDrawWorker(bitmap, params));
+				loader.submitDisplayTask(new BitmapDrawWorker(bitmap, params));
 				if(LazyImageLoader.options.enableMemoryCache && params.allowMemoryCache){
 					loader.cacheManager.addToMemoryCache(params.memoryCacheKey, bitmap);
 				}
 			}
 		}
+	}
+	
+	boolean isMappingBroken(){
+		return loader.isTargetDisplayerMappingBroken(params);
 	}
 
 }

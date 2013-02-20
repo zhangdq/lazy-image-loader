@@ -14,6 +14,8 @@ public class TaskParams {
 	public final boolean allowMemoryCache;
 	public final String diskCacheKey;
 	public final String memoryCacheKey;
+	
+	public boolean isReady = true;
 
 	public TaskParams(ImageView displayer,String targetUri, boolean allowCompress, boolean allowCacheToMemory, boolean isDiffSigntrue){
 		this.allowCompress = allowCompress;
@@ -26,6 +28,13 @@ public class TaskParams {
 	
 	public ImageView displayer(){
 		return displayer;
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		TaskParams params = (TaskParams) obj;
+		return params.displayer == this.displayer 
+				&& params.targetUri.equals(this.targetUri);
 	}
 	
 	private static final int RADIX = 10 + 26;

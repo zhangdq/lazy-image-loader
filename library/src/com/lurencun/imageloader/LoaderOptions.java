@@ -14,22 +14,22 @@ public class LoaderOptions {
 	public final int connectionTimeOut;
 	public final int readTimeOut;
 	public final boolean enableMemoryCache;
-	public final boolean enablePostInvalidate;
 	public final int maxMemoryInByte;
 	public final String cacheDir;
 	public final boolean enableLogging;
 	public final int submitPeriod;
+	public final float scaleForFixSize;
 	
 	private LoaderOptions(Builder builder){
-		imageStubResId = builder.imageStubResId;
-		connectionTimeOut = builder.connectionTimeOut;
-		readTimeOut = builder.readTimeOut;
-		maxMemoryInByte = builder.maxMemoryInByte;
-		cacheDir = builder.cacheDir;
-		enableLogging = builder.enableLogging;
-		enablePostInvalidate = builder.enablePostInvalidate;
-		enableMemoryCache = builder.enableMemoryCache;
-		submitPeriod = builder.submitPeriod;
+		this.imageStubResId = builder.imageStubResId;
+		this.connectionTimeOut = builder.connectionTimeOut;
+		this.readTimeOut = builder.readTimeOut;
+		this.maxMemoryInByte = builder.maxMemoryInByte;
+		this.cacheDir = builder.cacheDir;
+		this.enableLogging = builder.enableLogging;
+		this.enableMemoryCache = builder.enableMemoryCache;
+		this.submitPeriod = builder.submitPeriod;
+		this.scaleForFixSize = builder.scaleForFixedSize;
 	}
 	
 	public static class Builder{
@@ -37,11 +37,11 @@ public class LoaderOptions {
     	private int connectionTimeOut = 30 * 1000;
     	private int readTimeOut = 30 * 1000;
     	private int maxMemoryInByte = (int) (Runtime.getRuntime().maxMemory()/4);
-    	private String cacheDir = "_lrcImageLoaderCache";
+    	private String cacheDir = "lrc_cache";
     	private boolean enableLogging = false;
     	private boolean enableMemoryCache = true;
-    	private boolean enablePostInvalidate = false;
-    	private int submitPeriod = 45;
+    	private int submitPeriod = 38;
+    	float scaleForFixedSize = 1.5f;
     	
     	/**
     	 * 设置默认资源图片
@@ -53,6 +53,11 @@ public class LoaderOptions {
     		return this;
     	}
     	
+    	/**
+    	 * 设置提交显示请求的周期
+    	 * @param period
+    	 * @return
+    	 */
     	public Builder setSubmitPeriod(int period){
     		submitPeriod = period;
     		return this;
@@ -105,16 +110,6 @@ public class LoaderOptions {
     	 */
     	public Builder setEnableLogging(boolean enable){
     		enableLogging = enable;
-    		return this;
-    	}
-    	
-    	/**
-    	 * 设置是否输出调试信息
-    	 * @param enable
-    	 * @return
-    	 */
-    	public Builder setEnablePostInvalidate(boolean enable){
-    		enablePostInvalidate = enable;
     		return this;
     	}
     	
